@@ -5,15 +5,11 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
 
 class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        Role::findOrCreate('super-admin', 'web');
-        Role::findOrCreate('manager', 'web');
-
         $email = env('ADMIN_EMAIL', 'admin@zarzoursport.com');
         $password = env('ADMIN_PASSWORD') ?: Str::random(16);
 
@@ -26,7 +22,7 @@ class AdminSeeder extends Seeder
             ],
         );
 
-        $admin->syncRoles(['super-admin']);
+        $admin->assignRole('super-admin');
 
         if (! env('ADMIN_PASSWORD')) {
             $this->command->warn("تم إنشاء حساب الأدمن: {$email} — كلمة السر المولّدة عشوائياً: {$password}");
