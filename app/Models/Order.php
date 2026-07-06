@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Order extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'customer_name',
+        'phone_number',
+        'province_id',
+        'shipping_address',
+        'extra_notes',
+        'subtotal',
+        'discount_amount',
+        'shipping_fee',
+        'total',
+        'coupon_id',
+        'applied_offer_id',
+        'payment_method',
+        'status',
+        'reserved_until',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'subtotal' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
+            'shipping_fee' => 'decimal:2',
+            'total' => 'decimal:2',
+            'reserved_until' => 'datetime',
+        ];
+    }
+
+    /**
+     * @return BelongsTo<Province, $this>
+     */
+    public function province(): BelongsTo
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    /**
+     * @return BelongsTo<Coupon, $this>
+     */
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
+    }
+
+    /**
+     * @return BelongsTo<Offer, $this>
+     */
+    public function appliedOffer(): BelongsTo
+    {
+        return $this->belongsTo(Offer::class, 'applied_offer_id');
+    }
+
+    /**
+     * @return HasMany<OrderItem, $this>
+     */
+    public function items(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * @return HasMany<StockMovement, $this>
+     */
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+}

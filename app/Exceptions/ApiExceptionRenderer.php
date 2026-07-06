@@ -17,6 +17,11 @@ class ApiExceptionRenderer
     public function render(Throwable $e, Request $request): JsonResponse
     {
         [$message, $errors, $status] = match (true) {
+            $e instanceof OutOfStockException => [
+                $e->getMessage(),
+                null,
+                422,
+            ],
             $e instanceof ValidationException => [
                 __('validation.failed_message'),
                 $e->errors(),
