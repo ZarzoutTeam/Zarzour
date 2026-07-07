@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Product extends Model implements HasMedia
 {
@@ -38,8 +41,40 @@ class Product extends Model implements HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('images');
-        $this->addMediaCollection('video')->singleFile();
+        $this->addMediaCollection('images')
+            ->acceptsMimeTypes(config('catalog.media.allowed_image_mimes'));
+
+        $this->addMediaCollection('video')
+            ->singleFile()
+            ->acceptsMimeTypes(config('catalog.media.allowed_video_mimes'));
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumbnail')
+            ->performOnCollections('images')
+            ->nonQueued()
+            ->width(300)
+            ->format('webp');
+
+        $this->addMediaConversion('medium')
+            ->performOnCollections('images')
+            ->nonQueued()
+            ->width(800)
+            ->format('webp');
+    }
+
+    /**
+     * أول صورة بمجموعة الصور فقط (حسب ترتيب الرفع) - لتفادي تحميل كل الميديا بقوائم الكتالوغ.
+     *
+     * @return MorphOne<Media, $this>
+     */
+    public function primaryImage(): MorphOne
+    {
+        return $this->morphOne(Media::class, 'model')
+            ->ofMany(['order_column' => 'min'], function (Builder $query) {
+                $query->where('collection_name', 'images');
+            });
     }
 
     /**
@@ -85,5 +120,14 @@ class Product extends Model implements HasMedia
     public function getAvailableQuantityAttribute(): int
     {
         return $this->stock_quantity - $this->reserved_quantity;
+    }
+
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
     }
 }

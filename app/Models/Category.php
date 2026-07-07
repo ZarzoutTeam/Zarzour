@@ -60,4 +60,13 @@ class Category extends Model
     {
         return $query->whereNull('parent_id');
     }
+
+    /**
+     * @param  Builder<Category>  $query
+     * @return Builder<Category>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
 }
