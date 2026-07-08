@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\BannerController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\ProductController;
@@ -20,6 +21,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     });
 
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+
+    Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
 
     Route::prefix('products')->name('products.')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('index');

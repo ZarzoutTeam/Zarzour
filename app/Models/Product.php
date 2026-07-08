@@ -117,6 +117,14 @@ class Product extends Model implements HasMedia
         return $this->hasMany(StockMovement::class);
     }
 
+    /**
+     * @return HasMany<Banner, $this>
+     */
+    public function banners(): HasMany
+    {
+        return $this->hasMany(Banner::class);
+    }
+
     public function getAvailableQuantityAttribute(): int
     {
         return $this->stock_quantity - $this->reserved_quantity;
