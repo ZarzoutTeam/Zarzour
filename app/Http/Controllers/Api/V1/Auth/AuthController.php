@@ -22,11 +22,8 @@ class AuthController extends Controller
     {
         $data = $request->validated();
 
-        $existingCustomer = Customer::where('phone_number', $data['phone_number'])->first();
-        $name = $existingCustomer->name ?? $data['phone_number'];
-
         $user = User::create([
-            'name' => $name,
+            'name' => $data['name'],
             'phone_number' => $data['phone_number'],
             'password' => $data['password'],
         ]);
@@ -35,7 +32,7 @@ class AuthController extends Controller
 
         Customer::updateOrCreate(
             ['phone_number' => $data['phone_number']],
-            ['user_id' => $user->id, 'name' => $name],
+            ['user_id' => $user->id, 'name' => $data['name']],
         );
 
         $token = $user->createToken('customer-api')->plainTextToken;

@@ -15,6 +15,12 @@ class ProvinceFactory extends Factory
         return [
             'name' => fake()->unique()->city(),
             'shipping_fee' => fake()->randomFloat(2, 1000, 10000),
+            'is_active' => true,
         ];
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(['is_active' => false]);
     }
 }

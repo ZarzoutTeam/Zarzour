@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ShieldSeeder::class,
             AdminSeeder::class,
             CategorySeeder::class,
+            ProductSeeder::class,
             ProvinceSeeder::class,
             SettingSeeder::class,
         ]);

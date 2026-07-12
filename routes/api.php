@@ -2,9 +2,13 @@
 
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\BannerController;
+use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\HealthController;
+use App\Http\Controllers\Api\V1\HomeController;
+use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\ProvinceController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -20,12 +24,25 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         });
     });
 
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 
     Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
 
+    Route::get('/provinces', [ProvinceController::class, 'index'])->name('provinces.index');
+
     Route::prefix('products')->name('products.')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('index');
         Route::get('/{slug}', [ProductController::class, 'show'])->name('show');
+    });
+
+    Route::post('/cart/calculate', [CartController::class, 'calculate'])->name('cart.calculate');
+
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+
+    Route::middleware('auth:sanctum')->prefix('me')->name('me.')->group(function () {
+        Route::get('/orders', [OrderController::class, 'myOrders'])->name('orders.index');
+        Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     });
 });

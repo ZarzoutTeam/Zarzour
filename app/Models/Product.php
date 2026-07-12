@@ -23,6 +23,7 @@ class Product extends Model implements HasMedia
         'price',
         'category_id',
         'is_active',
+        'is_featured',
         'extra_info',
         'stock_quantity',
         'reserved_quantity',
@@ -33,6 +34,7 @@ class Product extends Model implements HasMedia
         return [
             'price' => 'decimal:2',
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
             'extra_info' => 'array',
             'stock_quantity' => 'integer',
             'reserved_quantity' => 'integer',

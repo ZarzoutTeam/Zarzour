@@ -22,6 +22,21 @@ class ApiExceptionRenderer
                 null,
                 422,
             ],
+            $e instanceof CouponException => [
+                $e->getMessage(),
+                null,
+                422,
+            ],
+            $e instanceof OverlappingOfferException => [
+                $e->getMessage(),
+                null,
+                422,
+            ],
+            $e instanceof InvalidOrderStatusTransitionException => [
+                $e->getMessage(),
+                null,
+                422,
+            ],
             $e instanceof ValidationException => [
                 __('validation.failed_message'),
                 $e->errors(),

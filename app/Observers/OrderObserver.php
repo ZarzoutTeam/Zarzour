@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Exceptions\InvalidOrderStatusTransitionException;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Setting;
@@ -21,9 +22,15 @@ class OrderObserver
 
     public function created(Order $order): void
     {
+        $attributes = ['name' => $order->customer_name, 'address' => $order->shipping_address];
+
+        if ($order->user_id !== null) {
+            $attributes['user_id'] = $order->user_id;
+        }
+
         Customer::updateOrCreate(
             ['phone_number' => $order->phone_number],
-            ['name' => $order->customer_name, 'address' => $order->shipping_address],
+            $attributes,
         );
     }
 
@@ -36,10 +43,16 @@ class OrderObserver
         $original = $order->getOriginal('status');
         $new = $order->status;
 
+        if (! Order::isValidStatusTransition($original, $new)) {
+            throw new InvalidOrderStatusTransitionException($original, $new);
+        }
+
         if ($original === 'pending' && in_array($new, self::FINAL_CONFIRMED_STATUSES, true)) {
             $this->confirmReservation($order);
         } elseif ($original === 'pending' && $new === 'cancelled') {
             $this->releaseReservation($order, 'release');
+        } elseif ($original === 'confirmed' && $new === 'cancelled') {
+            $this->restockAfterConfirmedCancellation($order);
         }
     }
 
@@ -68,6 +81,25 @@ class OrderObserver
             StockMovement::create([
                 'product_id' => $item->product_id,
                 'type' => $type,
+                'quantity' => $item->quantity,
+                'order_id' => $order->id,
+                'notes' => null,
+            ]);
+        }
+    }
+
+    /**
+     * A confirmed order already had stock permanently deducted (not just reserved),
+     * so cancelling it must restock the products rather than releasing a reservation.
+     */
+    private function restockAfterConfirmedCancellation(Order $order): void
+    {
+        foreach ($order->items as $item) {
+            $item->product->increment('stock_quantity', $item->quantity);
+
+            StockMovement::create([
+                'product_id' => $item->product_id,
+                'type' => 'cancelled_restock',
                 'quantity' => $item->quantity,
                 'order_id' => $order->id,
                 'notes' => null,

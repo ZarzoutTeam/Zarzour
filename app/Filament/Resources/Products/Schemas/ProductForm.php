@@ -55,6 +55,9 @@ class ProductForm
                     ->label('مفعّل')
                     ->default(true)
                     ->required(),
+                Toggle::make('is_featured')
+                    ->label('منتج مميز بالصفحة الرئيسية')
+                    ->default(false),
                 Textarea::make('description')
                     ->label('الوصف')
                     ->rows(4)

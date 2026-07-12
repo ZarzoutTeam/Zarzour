@@ -48,6 +48,10 @@ class ProductsTable
                 IconColumn::make('is_active')
                     ->label('الحالة')
                     ->boolean(),
+                IconColumn::make('is_featured')
+                    ->label('مميز')
+                    ->boolean()
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('category_id')
@@ -57,6 +61,8 @@ class ProductsTable
                     ->preload(),
                 TernaryFilter::make('is_active')
                     ->label('الحالة'),
+                TernaryFilter::make('is_featured')
+                    ->label('مميز بالصفحة الرئيسية'),
                 SelectFilter::make('stock_status')
                     ->label('التوفر')
                     ->options([

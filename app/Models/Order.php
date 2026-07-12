@@ -11,7 +11,24 @@ class Order extends Model
 {
     use HasFactory;
 
+    /**
+     * Status transitions permitted anywhere in the system (model/observer level).
+     * The Filament admin UI only exposes a subset of these as selectable actions —
+     * see OrderResource's status-change action for the UI-level restriction.
+     *
+     * @var array<string, list<string>>
+     */
+    public const VALID_TRANSITIONS = [
+        'pending' => ['confirmed', 'cancelled', 'expired'],
+        'confirmed' => ['shipped', 'cancelled'],
+        'shipped' => ['delivered'],
+        'delivered' => [],
+        'cancelled' => [],
+        'expired' => [],
+    ];
+
     protected $fillable = [
+        'user_id',
         'customer_name',
         'phone_number',
         'province_id',
@@ -37,6 +54,19 @@ class Order extends Model
             'total' => 'decimal:2',
             'reserved_until' => 'datetime',
         ];
+    }
+
+    public static function isValidStatusTransition(string $from, string $to): bool
+    {
+        return in_array($to, self::VALID_TRANSITIONS[$from] ?? [], true);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

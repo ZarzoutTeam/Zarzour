@@ -170,6 +170,7 @@ return [
         'password' => 'كلمة المرور',
         'phone' => 'رقم الهاتف',
         'phone_number' => 'رقم الهاتف',
+        'province_id' => 'المحافظة',
     ],
 
 ];
