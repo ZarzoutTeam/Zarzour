@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
+use App\Enums\OrderStatus;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -11,24 +12,6 @@ use Filament\Schemas\Schema;
 
 class OrderInfolist
 {
-    private const STATUS_LABELS = [
-        'pending' => 'قيد الانتظار',
-        'confirmed' => 'مؤكد',
-        'shipped' => 'تم الشحن',
-        'delivered' => 'تم التسليم',
-        'cancelled' => 'ملغى',
-        'expired' => 'منتهي الصلاحية',
-    ];
-
-    private const STATUS_COLORS = [
-        'pending' => 'warning',
-        'confirmed' => 'info',
-        'shipped' => 'primary',
-        'delivered' => 'success',
-        'cancelled' => 'danger',
-        'expired' => 'gray',
-    ];
-
     private const PAYMENT_METHOD_LABELS = [
         'cod' => 'الدفع عند الاستلام',
         'sham_cash' => 'شام كاش',
@@ -56,8 +39,8 @@ class OrderInfolist
                             TextEntry::make('status')
                                 ->label('الحالة')
                                 ->badge()
-                                ->formatStateUsing(fn (string $state): string => self::STATUS_LABELS[$state] ?? $state)
-                                ->color(fn (string $state): string => self::STATUS_COLORS[$state] ?? 'gray'),
+                                ->formatStateUsing(fn (string $state): string => OrderStatus::from($state)->getLabel())
+                                ->color(fn (string $state): string => OrderStatus::from($state)->getColor()),
                             TextEntry::make('payment_method')
                                 ->label('طريقة الدفع')
                                 ->formatStateUsing(fn (string $state): string => self::PAYMENT_METHOD_LABELS[$state] ?? $state),

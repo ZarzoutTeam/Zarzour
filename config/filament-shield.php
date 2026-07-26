@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+use App\Filament\Pages\Dashboard as AppDashboard;
+use App\Filament\Widgets\SalesOverviewWidget;
+use App\Filament\Widgets\TopSellingProductsWidget;
 use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource;
 use Filament\Pages\Dashboard;
 use Filament\Widgets\AccountWidget;
@@ -198,6 +201,7 @@ return [
         'prefix' => 'view',
         'exclude' => [
             Dashboard::class,
+            AppDashboard::class,
         ],
     ],
 
@@ -218,6 +222,8 @@ return [
         'exclude' => [
             AccountWidget::class,
             FilamentInfoWidget::class,
+            SalesOverviewWidget::class,
+            TopSellingProductsWidget::class,
         ],
     ],
 

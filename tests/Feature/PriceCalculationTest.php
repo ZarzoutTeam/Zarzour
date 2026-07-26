@@ -32,7 +32,7 @@ class PriceCalculationTest extends TestCase
         $this->assertSame(100.0, (float) $line['original_line_total']);
         $this->assertSame(10.0, (float) $line['direct_discount_amount']);
         $this->assertSame(90.0, (float) $line['final_line_total']);
-        $this->assertSame(90.0, (float) $response->json('data.total'));
+        $this->assertSame(90.0, (float) $response->json('data.total_before_shipping'));
     }
 
     public function test_coupon_applies_after_direct_discount_with_exact_final_number(): void
@@ -53,7 +53,7 @@ class PriceCalculationTest extends TestCase
         $this->assertSame(10.0, (float) $line['direct_discount_amount']);
         $this->assertSame(22.5, (float) $line['coupon_discount_amount']);
         $this->assertSame(67.5, (float) $line['final_line_total']);
-        $this->assertSame(67.5, (float) $response->json('data.total'));
+        $this->assertSame(67.5, (float) $response->json('data.total_before_shipping'));
     }
 
     public function test_customer_specific_coupon_succeeds_only_for_matching_phone(): void
@@ -67,7 +67,7 @@ class PriceCalculationTest extends TestCase
             'phone_number' => '0911111111',
         ]);
         $matching->assertOk();
-        $this->assertSame(90.0, (float) $matching->json('data.total'));
+        $this->assertSame(90.0, (float) $matching->json('data.total_before_shipping'));
 
         $mismatched = $this->postJson('/api/v1/cart/calculate', [
             'lines' => [['product_id' => $product->id, 'quantity' => 1]],

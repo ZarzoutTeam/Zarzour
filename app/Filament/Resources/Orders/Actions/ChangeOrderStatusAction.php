@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Actions;
 
+use App\Enums\OrderStatus;
 use App\Exceptions\InvalidOrderStatusTransitionException;
 use App\Models\Order;
 use Filament\Actions\Action;
@@ -11,15 +12,6 @@ use Filament\Support\Icons\Heroicon;
 
 class ChangeOrderStatusAction
 {
-    private const STATUS_LABELS = [
-        'pending' => 'قيد الانتظار',
-        'confirmed' => 'مؤكد',
-        'shipped' => 'تم الشحن',
-        'delivered' => 'تم التسليم',
-        'cancelled' => 'ملغى',
-        'expired' => 'منتهي الصلاحية',
-    ];
-
     public static function make(): Action
     {
         return Action::make('changeStatus')
@@ -57,7 +49,7 @@ class ChangeOrderStatusAction
         $next = array_diff(Order::VALID_TRANSITIONS[$record->status], ['expired']);
 
         return collect($next)
-            ->mapWithKeys(fn (string $status) => [$status => self::STATUS_LABELS[$status] ?? $status])
+            ->mapWithKeys(fn (string $status) => [$status => OrderStatus::from($status)->getLabel()])
             ->all();
     }
 }

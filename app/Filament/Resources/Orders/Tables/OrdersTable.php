@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Actions\ChangeOrderStatusAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -13,24 +14,6 @@ use Illuminate\Database\Eloquent\Builder;
 
 class OrdersTable
 {
-    private const STATUS_LABELS = [
-        'pending' => 'قيد الانتظار',
-        'confirmed' => 'مؤكد',
-        'shipped' => 'تم الشحن',
-        'delivered' => 'تم التسليم',
-        'cancelled' => 'ملغى',
-        'expired' => 'منتهي الصلاحية',
-    ];
-
-    private const STATUS_COLORS = [
-        'pending' => 'warning',
-        'confirmed' => 'info',
-        'shipped' => 'primary',
-        'delivered' => 'success',
-        'cancelled' => 'danger',
-        'expired' => 'gray',
-    ];
-
     public static function configure(Table $table): Table
     {
         return $table
@@ -45,8 +28,8 @@ class OrdersTable
                 TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => self::STATUS_LABELS[$state] ?? $state)
-                    ->color(fn (string $state): string => self::STATUS_COLORS[$state] ?? 'gray'),
+                    ->formatStateUsing(fn (string $state): string => OrderStatus::from($state)->getLabel())
+                    ->color(fn (string $state): string => OrderStatus::from($state)->getColor()),
                 TextColumn::make('total')
                     ->label('الإجمالي')
                     ->numeric(2)
@@ -59,7 +42,7 @@ class OrdersTable
             ->filters([
                 SelectFilter::make('status')
                     ->label('الحالة')
-                    ->options(self::STATUS_LABELS),
+                    ->options(OrderStatus::labels()),
                 Filter::make('created_at')
                     ->label('تاريخ الطلب')
                     ->schema([

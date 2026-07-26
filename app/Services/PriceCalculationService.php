@@ -31,7 +31,7 @@ class PriceCalculationService
      * @return array{
      *     subtotal: float,
      *     discount_amount: float,
-     *     total: float,
+     *     total_before_shipping: float,
      *     shipping_fee: float|null,
      *     shipping_required: bool,
      *     grand_total: float,
@@ -170,7 +170,7 @@ class PriceCalculationService
         return [
             'subtotal' => $subtotal,
             'discount_amount' => $this->money($subtotal - $total),
-            'total' => $total,
+            'total_before_shipping' => $total,
             'shipping_fee' => $shippingFee,
             'shipping_required' => $shippingFee === null,
             'grand_total' => $this->money($total + ($shippingFee ?? 0)),

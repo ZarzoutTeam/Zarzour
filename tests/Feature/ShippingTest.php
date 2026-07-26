@@ -20,7 +20,7 @@ class ShippingTest extends TestCase
         ]);
 
         $response->assertOk();
-        $this->assertSame(100.0, (float) $response->json('data.total'));
+        $this->assertSame(100.0, (float) $response->json('data.total_before_shipping'));
         $this->assertNull($response->json('data.shipping_fee'));
         $this->assertTrue($response->json('data.shipping_required'));
         $this->assertFalse($response->json('data.is_final_total'));
@@ -38,7 +38,7 @@ class ShippingTest extends TestCase
         ]);
 
         $response->assertOk();
-        $this->assertSame(100.0, (float) $response->json('data.total'));
+        $this->assertSame(100.0, (float) $response->json('data.total_before_shipping'));
         $this->assertSame(15000.0, (float) $response->json('data.shipping_fee'));
         $this->assertFalse($response->json('data.shipping_required'));
         $this->assertTrue($response->json('data.is_final_total'));

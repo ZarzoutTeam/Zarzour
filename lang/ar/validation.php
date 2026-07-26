@@ -171,6 +171,14 @@ return [
         'phone' => 'رقم الهاتف',
         'phone_number' => 'رقم الهاتف',
         'province_id' => 'المحافظة',
+        'customer_name' => 'اسم العميل',
+        'shipping_address' => 'عنوان الشحن',
+        'extra_notes' => 'ملاحظات إضافية',
+        'payment_method' => 'طريقة الدفع',
+        'coupon_code' => 'كود الخصم',
+        'lines' => 'عناصر الطلب',
+        'lines.*.product_id' => 'المنتج',
+        'lines.*.quantity' => 'الكمية',
     ],
 
 ];

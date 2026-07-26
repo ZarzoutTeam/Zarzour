@@ -27,6 +27,11 @@ class Order extends Model
         'expired' => [],
     ];
 
+    /**
+     * `total` stores the grand (shipping-inclusive) total — equivalent to
+     * PriceCalculationService::calculate()'s 'grand_total' key, not its
+     * 'total_before_shipping' key.
+     */
     protected $fillable = [
         'user_id',
         'customer_name',

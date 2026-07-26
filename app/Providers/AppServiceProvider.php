@@ -19,6 +19,7 @@ use App\Observers\OrderObserver;
 use App\Observers\ProductMediaObserver;
 use App\Observers\ProductObserver;
 use App\Observers\ProvinceObserver;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Support\ServiceProvider;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -37,6 +38,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // This app has no named 'login' web route (API + Filament panel only, and
+        // Filament uses its own auth middleware). Without this, an unauthenticated
+        // request to any `auth:sanctum` route crashes with a raw 500
+        // (RouteNotFoundException) instead of the clean 401 ApiExceptionRenderer
+        // already produces for AuthenticationException.
+        Authenticate::redirectUsing(fn () => null);
+
         Order::observe(OrderObserver::class);
         OrderItem::observe(OrderItemObserver::class);
         Category::observe(CategoryObserver::class);

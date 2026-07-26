@@ -7,6 +7,9 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Setting;
 use App\Models\StockMovement;
+use App\Models\User;
+use App\Notifications\NewOrderPlaced;
+use Illuminate\Support\Facades\Notification;
 
 class OrderObserver
 {
@@ -32,6 +35,19 @@ class OrderObserver
             ['phone_number' => $order->phone_number],
             $attributes,
         );
+
+        $this->notifyAdminsOfNewOrder($order);
+    }
+
+    private function notifyAdminsOfNewOrder(Order $order): void
+    {
+        $recipients = User::query()->permission('ViewAny:Order')->get();
+
+        if ($recipients->isEmpty()) {
+            return;
+        }
+
+        Notification::send($recipients, new NewOrderPlaced($order->id, $order->customer_name));
     }
 
     public function updating(Order $order): void
