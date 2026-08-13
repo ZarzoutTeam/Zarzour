@@ -11,6 +11,17 @@ class Dashboard extends BaseDashboard
 {
     use HasFiltersForm;
 
+    /**
+     * @return array<string>
+     */
+    public function getPageClasses(): array
+    {
+        return [
+            ...parent::getPageClasses(),
+            'zs-dashboard',
+        ];
+    }
+
     public function filtersForm(Schema $schema): Schema
     {
         return $schema

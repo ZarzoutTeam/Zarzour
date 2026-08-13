@@ -1,0 +1,776 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*.php';
+@source '../../../../resources/views/**/*.blade.php';
+
+/*
+ * Zarzour Sport admin theme
+ *
+ * Layer 1: authoritative design tokens
+ */
+:root {
+    --zs-green: #7dc142;
+    --zs-lime: #bdd531;
+    --zs-green-ink: #4a7c1f;
+    --zs-charcoal: #414042;
+    --zs-charcoal-warm: #414142;
+    --zs-surface: #ffffff;
+    --zs-canvas: #f7f7f8;
+    --zs-border: #e5e5e7;
+
+    /*
+     * Interactive boundaries require more contrast than decorative hairlines.
+     * This neutral is derived entirely from the authoritative surface and
+     * charcoal tokens and reaches at least 3:1 against white.
+     */
+    --zs-control-border: color-mix(
+        in srgb,
+        var(--zs-charcoal) 60%,
+        var(--zs-surface)
+    );
+    --zs-sidebar-muted: color-mix(
+        in srgb,
+        var(--zs-surface) 72%,
+        transparent
+    );
+    --zs-brand-wash: color-mix(
+        in srgb,
+        var(--zs-green) 10%,
+        transparent
+    );
+    --zs-row-hover: color-mix(
+        in srgb,
+        var(--zs-green) 7%,
+        var(--zs-surface)
+    );
+    --zs-canvas-tint: color-mix(
+        in srgb,
+        var(--zs-green) 2%,
+        var(--zs-canvas)
+    );
+    --zs-surface-muted: color-mix(
+        in srgb,
+        var(--zs-canvas) 72%,
+        var(--zs-surface)
+    );
+    --zs-floating-shadow: color-mix(
+        in srgb,
+        var(--zs-charcoal) 22%,
+        transparent
+    );
+    --zs-soft-shadow: color-mix(
+        in srgb,
+        var(--zs-charcoal) 8%,
+        transparent
+    );
+    --zs-hairline-light: color-mix(
+        in srgb,
+        var(--zs-surface) 12%,
+        transparent
+    );
+}
+
+/*
+ * Layer 2: base and typography
+ */
+.fi-body,
+.fi-simple-layout {
+    font-family: 'Cairo', ui-sans-serif, system-ui, sans-serif;
+    color: var(--zs-charcoal);
+}
+
+.fi-header-heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+}
+
+.fi-header-heading::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    flex: none;
+    border-radius: 3px;
+    background: var(--zs-green);
+    box-shadow: 0 0 0 5px var(--zs-brand-wash);
+}
+
+.fi-section-header-heading,
+.fi-ta-header-heading {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.fi-wi-stats-overview-stat-value {
+    font-size: clamp(2rem, 2.5vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--zs-charcoal);
+    font-variant-numeric: tabular-nums;
+}
+
+.fi-ta-header-cell,
+.fi-fo-field-label,
+.fi-btn,
+.fi-badge {
+    font-weight: 600;
+}
+
+.fi-ta-cell,
+.fi-input {
+    font-weight: 500;
+}
+
+.fi-ta-cell {
+    unicode-bidi: plaintext;
+}
+
+.fi-wi-stats-overview-stat-description,
+.fi-section-header-description,
+.fi-ta-header-description,
+.fi-fo-field-wrp-helper-text,
+.fi-fo-field-wrp-error-message {
+    font-weight: 400;
+}
+
+:is(
+    input[type='tel'],
+    input[type='number'],
+    input[type='date'],
+    input[type='datetime-local'],
+    input[type='time']
+) {
+    direction: ltr;
+    text-align: start;
+    font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Official brand treatment.
+ *
+ * Expanded footprint: 168px x 44px.
+ * Collapsed footprint: 40px x 40px.
+ * Both states use the same untouched web rendition of the supplied logo.
+ */
+.fi-logo:has(.zs-brand--wordmark) {
+    width: 168px;
+    min-width: 168px;
+    height: 44px;
+}
+
+.zs-brand {
+    box-sizing: border-box;
+    flex: none;
+}
+
+.zs-brand--wordmark {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.zs-brand--wordmark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.zs-brand--compact {
+    position: relative;
+    display: none;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--zs-surface);
+    box-shadow:
+        0 0 0 1px var(--zs-hairline-light),
+        0 6px 18px var(--zs-soft-shadow);
+}
+
+.zs-brand--compact img {
+    position: absolute;
+    inset-block-start: -3px;
+    inset-inline-start: -5px;
+    width: auto;
+    max-width: none;
+    height: 48px;
+    direction: ltr;
+}
+
+.fi-sidebar .fi-logo:has(.zs-brand--wordmark) {
+    box-sizing: border-box;
+    padding: 0.4rem 0.55rem;
+    border: 1px solid var(--zs-hairline-light);
+    border-radius: 8px;
+    background: var(--zs-surface);
+    box-shadow: 0 8px 24px var(--zs-soft-shadow);
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .zs-brand--compact {
+    display: inline-flex;
+}
+
+.fi-sidebar.fi-sidebar-open .zs-brand--compact {
+    display: none;
+}
+
+/*
+ * Layer 3: layout chrome
+ */
+.fi-body,
+.fi-main-ctn,
+.fi-main {
+    background: var(--zs-canvas-tint);
+}
+
+.fi-sidebar,
+.fi-sidebar-header,
+.fi-sidebar-nav,
+.fi-sidebar-footer {
+    background: var(--zs-charcoal);
+}
+
+.fi-sidebar {
+    border-inline-end: 1px solid var(--zs-charcoal-warm);
+    box-shadow: 0 0 24px var(--zs-soft-shadow);
+}
+
+.fi-sidebar-header {
+    border-block-end: 1px solid var(--zs-hairline-light);
+    box-shadow: none;
+}
+
+.fi-sidebar-group-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.045em;
+    opacity: 0.8;
+}
+
+.fi-sidebar-item-btn {
+    border-inline-start: 3px solid transparent;
+    border-radius: 6px;
+    color: var(--zs-sidebar-muted);
+    transition:
+        transform 120ms ease,
+        background-color 120ms ease,
+        color 120ms ease;
+}
+
+.fi-sidebar-item-label,
+.fi-sidebar-item-btn > .fi-icon,
+.fi-sidebar-group-label,
+.fi-sidebar-group-collapse-btn > .fi-icon {
+    color: var(--zs-sidebar-muted);
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    border-inline-start-color: var(--zs-green);
+    background: var(--zs-brand-wash);
+    box-shadow: inset 0 1px 0 var(--zs-hairline-light);
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label {
+    color: var(--zs-surface);
+    font-weight: 700;
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon {
+    color: var(--zs-green);
+}
+
+.fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:hover,
+.fi-sidebar-item.fi-sidebar-item-has-url
+    > .fi-sidebar-item-btn:focus-visible {
+    background: color-mix(
+        in srgb,
+        var(--zs-surface) 8%,
+        transparent
+    );
+    color: var(--zs-surface);
+    transform: translateY(-1px);
+}
+
+.fi-topbar {
+    background: color-mix(
+        in srgb,
+        var(--zs-surface) 92%,
+        transparent
+    );
+    border-block-end: 1px solid var(--zs-border);
+    box-shadow: 0 4px 18px var(--zs-soft-shadow);
+    backdrop-filter: blur(16px) saturate(1.15);
+}
+
+.fi-topbar .fi-icon-btn {
+    border: 1px solid var(--zs-border);
+    border-radius: 6px;
+    background: var(--zs-surface-muted);
+    color: var(--zs-green-ink);
+}
+
+/*
+ * Layer 4: surfaces
+ */
+.fi-section,
+.fi-ta-ctn,
+.fi-wi-stats-overview-stat,
+.fi-fo-repeater-item,
+.fi-fo-builder-item {
+    overflow: hidden;
+    border: 1px solid var(--zs-border);
+    border-radius: 8px;
+    background: var(--zs-surface);
+    box-shadow: 0 1px 2px var(--zs-soft-shadow);
+}
+
+.fi-modal-window,
+.fi-dropdown-panel,
+.fi-no-notification {
+    border: 1px solid var(--zs-border);
+    border-radius: 8px;
+    background: var(--zs-surface);
+    box-shadow: 0 12px 32px var(--zs-floating-shadow);
+}
+
+.fi-section-header {
+    border-block-end-color: var(--zs-border);
+    background: var(--zs-surface);
+}
+
+.fi-wi-stats-overview-stat {
+    transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(
+        in srgb,
+        var(--zs-green) 38%,
+        var(--zs-border)
+    );
+    box-shadow: 0 14px 28px var(--zs-soft-shadow);
+}
+
+.fi-wi-stats-overview-stat .fi-icon {
+    box-sizing: content-box;
+    padding: 0.35rem;
+    border-radius: 6px;
+    background: var(--zs-brand-wash);
+    color: var(--zs-green-ink);
+}
+
+.fi-wi-stats-overview-stat-label {
+    color: color-mix(
+        in srgb,
+        var(--zs-charcoal) 72%,
+        var(--zs-surface)
+    );
+}
+
+/*
+ * Layer 5: data tables, badges, and pagination
+ */
+.fi-ta-header,
+.fi-ta-header-cell,
+.fi-ta-content-header {
+    background: var(--zs-surface-muted);
+}
+
+.fi-ta-header-cell {
+    color: var(--zs-charcoal);
+    box-shadow: inset 0 -1px 0 var(--zs-border);
+}
+
+.fi-ta-row {
+    border-inline-start: 2px solid transparent;
+    border-block-end: 1px solid var(--zs-border);
+    transition:
+        border-color 120ms ease,
+        background-color 120ms ease;
+}
+
+.fi-ta-row:last-child {
+    border-block-end: 0;
+}
+
+.fi-ta-row:hover {
+    border-inline-start-color: var(--zs-green);
+    background: var(--zs-row-hover);
+}
+
+.fi-badge,
+.fi-pagination-item {
+    border-radius: 6px;
+}
+
+.fi-badge {
+    box-shadow: inset 0 0 0 1px
+        color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.fi-badge.fi-color-primary {
+    background: var(--zs-brand-wash);
+    color: var(--zs-green-ink);
+}
+
+.fi-pagination-item.fi-active .fi-btn {
+    background: var(--zs-green);
+    color: var(--zs-charcoal);
+}
+
+/*
+ * Layer 6: buttons, inputs, and keyboard focus
+ */
+.fi-btn {
+    border-radius: 6px;
+    transition:
+        transform 120ms ease,
+        background-color 120ms ease,
+        box-shadow 120ms ease;
+}
+
+.fi-btn.fi-color-primary:not(.fi-outlined) {
+    background: var(--zs-green);
+    color: var(--zs-charcoal);
+    box-shadow:
+        inset 0 1px 0 color-mix(
+            in srgb,
+            var(--zs-surface) 32%,
+            transparent
+        ),
+        0 7px 16px color-mix(
+            in srgb,
+            var(--zs-green) 20%,
+            transparent
+        );
+}
+
+.fi-btn.fi-color-primary:not(.fi-outlined) > .fi-icon {
+    color: var(--zs-charcoal);
+}
+
+.fi-btn.fi-color-primary:not(.fi-outlined):hover {
+    background: color-mix(
+        in srgb,
+        var(--zs-green) 88%,
+        var(--zs-lime)
+    );
+    color: var(--zs-charcoal);
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 1px 0 color-mix(
+            in srgb,
+            var(--zs-surface) 36%,
+            transparent
+        ),
+        0 10px 22px color-mix(
+            in srgb,
+            var(--zs-green) 28%,
+            transparent
+        );
+}
+
+.fi-btn.fi-color-primary.fi-outlined,
+.fi-link.fi-color-primary,
+.fi-icon-btn.fi-color-primary {
+    color: var(--zs-green-ink);
+}
+
+.fi-input-wrp {
+    border: 1px solid var(--zs-control-border);
+    border-radius: 8px;
+    background: var(--zs-surface-muted);
+    box-shadow: inset 0 1px 0 var(--zs-surface);
+}
+
+.fi-input-wrp:focus-within {
+    border-color: var(--zs-green-ink);
+    outline: 2px solid var(--zs-green-ink);
+    outline-offset: 1px;
+    background: var(--zs-surface);
+    box-shadow: 0 6px 18px var(--zs-soft-shadow);
+}
+
+:is(
+    .fi-btn,
+    .fi-icon-btn,
+    .fi-sidebar-item-btn,
+    .fi-ta-header-cell-sort-btn,
+    .fi-pagination-item
+):focus-visible {
+    outline: 2px solid var(--zs-green-ink);
+    outline-offset: 2px;
+}
+
+.fi-sidebar
+    :is(.fi-icon-btn, .fi-sidebar-item-btn):focus-visible {
+    outline-color: var(--zs-lime);
+}
+
+/*
+ * Layer 7: dashboard KPI signature
+ *
+ * This selector maps directly to Filament v4.11.8's stat card class and needs
+ * neither deep nesting nor !important. The gradient is intentionally limited
+ * to these cards.
+ */
+.zs-dashboard .fi-page-content {
+    gap: 1.5rem;
+}
+
+.zs-dashboard .fi-header {
+    position: relative;
+    overflow: hidden;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--zs-border);
+    border-radius: 8px;
+    background: var(--zs-surface);
+    box-shadow: 0 10px 30px var(--zs-soft-shadow);
+}
+
+.zs-dashboard .fi-header::after {
+    content: '';
+    position: absolute;
+    inset-block-start: -2.75rem;
+    inset-inline-end: -2rem;
+    width: 8rem;
+    height: 8rem;
+    border: 1.25rem solid var(--zs-brand-wash);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.zs-dashboard .fi-wi-stats-overview-stat {
+    min-height: 10.5rem;
+    isolation: isolate;
+    padding-block: 0.25rem;
+    box-shadow:
+        0 1px 2px var(--zs-soft-shadow),
+        0 12px 32px color-mix(
+            in srgb,
+            var(--zs-charcoal) 5%,
+            transparent
+        );
+    animation: zs-dashboard-rise 420ms ease both;
+}
+
+.zs-dashboard
+    .fi-wi-stats-overview-stat:nth-child(2n) {
+    animation-delay: 55ms;
+}
+
+.zs-dashboard
+    .fi-wi-stats-overview-stat:nth-child(3n) {
+    animation-delay: 110ms;
+}
+
+.zs-dashboard
+    .fi-wi-stats-overview-stat:nth-child(4n) {
+    animation-delay: 165ms;
+}
+
+.zs-dashboard .fi-wi-stats-overview-stat::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset-block-start: -2.25rem;
+    inset-inline-end: -2.25rem;
+    width: 7rem;
+    height: 7rem;
+    border-radius: 50%;
+    background: var(--zs-brand-wash);
+    transition:
+        transform 180ms ease,
+        background-color 180ms ease;
+}
+
+.zs-dashboard
+    .fi-wi-stats-overview-stat:nth-child(2n)::after {
+    inset-block: auto -2.75rem;
+    background: color-mix(
+        in srgb,
+        var(--zs-lime) 11%,
+        transparent
+    );
+}
+
+.zs-dashboard
+    .fi-wi-stats-overview-stat:nth-child(3n)::after {
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 8px;
+    transform: rotate(18deg);
+}
+
+.zs-dashboard
+    .fi-wi-stats-overview-stat:hover::after {
+    background: color-mix(
+        in srgb,
+        var(--zs-green) 15%,
+        transparent
+    );
+    transform: scale(1.08);
+}
+
+.zs-dashboard
+    .fi-wi-stats-overview-stat:nth-child(3n):hover::after {
+    transform: rotate(24deg) scale(1.08);
+}
+
+.zs-dashboard .fi-wi-stats-overview-stat-content {
+    position: relative;
+    z-index: 2;
+}
+
+.fi-wi-stats-overview-stat::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset-block-start: 0;
+    inset-inline: 0;
+    height: 3px;
+    background: linear-gradient(
+        110deg,
+        var(--zs-green),
+        var(--zs-lime)
+    );
+}
+
+.zs-dashboard .fi-wi-table {
+    animation: zs-dashboard-rise 500ms 140ms ease both;
+}
+
+.zs-dashboard .fi-wi-table .fi-ta-header {
+    position: relative;
+    overflow: hidden;
+    background: var(--zs-charcoal);
+}
+
+.zs-dashboard .fi-wi-table .fi-ta-header::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: 0.4rem;
+    background: var(--zs-green);
+}
+
+.zs-dashboard .fi-wi-table .fi-ta-header-heading {
+    color: var(--zs-surface);
+}
+
+.zs-dashboard .fi-wi-table .fi-ta-header-description {
+    color: var(--zs-sidebar-muted);
+}
+
+@keyframes zs-dashboard-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/*
+ * Login page
+ */
+.fi-simple-layout {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--zs-charcoal);
+}
+
+.fi-simple-layout::before,
+.fi-simple-layout::after {
+    content: '';
+    position: fixed;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 8px;
+}
+
+.fi-simple-layout::before {
+    inset-block-start: -9rem;
+    inset-inline-end: -7rem;
+    width: 24rem;
+    height: 24rem;
+    border: 1px solid var(--zs-hairline-light);
+    transform: rotate(12deg);
+}
+
+.fi-simple-layout::after {
+    inset-block-end: 2rem;
+    inset-inline-start: 3rem;
+    width: 7rem;
+    height: 7rem;
+    background: var(--zs-brand-wash);
+    transform: rotate(-8deg);
+}
+
+.fi-simple-main {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--zs-border);
+    border-radius: 8px;
+    background: var(--zs-surface);
+    box-shadow: 0 24px 56px var(--zs-floating-shadow);
+}
+
+.fi-simple-main::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    height: 3px;
+    background: var(--zs-green);
+}
+
+.fi-simple-main .fi-logo {
+    margin-inline: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fi-sidebar-item-btn,
+    .fi-wi-stats-overview-stat,
+    .zs-dashboard .fi-wi-table,
+    .fi-ta-row,
+    .fi-btn {
+        transition: none;
+        animation: none;
+    }
+
+    .fi-wi-stats-overview-stat:hover,
+    .fi-btn.fi-color-primary:not(.fi-outlined):hover {
+        transform: none;
+    }
+
+    .zs-dashboard
+        .fi-wi-stats-overview-stat:hover::after {
+        transform: none;
+    }
+
+    .zs-dashboard
+        .fi-wi-stats-overview-stat:nth-child(3n):hover::after {
+        transform: rotate(18deg);
+    }
+}
