@@ -20,7 +20,7 @@ class ProductListResource extends JsonResource
             'slug' => $this->slug,
             'price' => (float) $this->price,
             'available_quantity' => $this->available_quantity,
-            'thumbnail' => $this->whenLoaded('primaryImage', fn () => $this->primaryImage?->getUrl('thumbnail')),
+            'thumbnail' => $this->whenLoaded('primaryImage', fn () => $this->primaryImage?->getFullUrl('thumbnail')),
             'category' => $this->whenLoaded('category', fn () => [
                 'id' => $this->category->id,
                 'name' => $this->category->name,

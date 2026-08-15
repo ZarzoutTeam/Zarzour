@@ -20,15 +20,15 @@ class BannerResource extends JsonResource
             'subtitle' => $this->subtitle,
             'priority' => $this->priority,
             'image' => [
-                'hero' => $this->getFirstMediaUrl('image', 'hero'),
-                'thumbnail' => $this->getFirstMediaUrl('image', 'thumbnail'),
+                'hero' => $this->getFirstMedia('image')?->getFullUrl('hero') ?? '',
+                'thumbnail' => $this->getFirstMedia('image')?->getFullUrl('thumbnail') ?? '',
             ],
             'product' => $this->whenLoaded('product', fn () => [
                 'id' => $this->product->id,
                 'slug' => $this->product->slug,
                 'name' => $this->product->name,
                 'price' => (float) $this->product->price,
-                'image' => $this->product->primaryImage?->getUrl('thumbnail'),
+                'image' => $this->product->primaryImage?->getFullUrl('thumbnail'),
             ]),
         ];
     }

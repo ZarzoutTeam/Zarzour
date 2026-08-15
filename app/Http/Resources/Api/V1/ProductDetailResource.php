@@ -31,9 +31,9 @@ class ProductDetailResource extends JsonResource
             'media' => $this->whenLoaded('media', fn () => $this->media->map(fn ($media) => [
                 'id' => $media->id,
                 'collection' => $media->collection_name,
-                'url' => $media->getUrl(),
-                'thumbnail_url' => $media->collection_name === 'images' ? $media->getUrl('thumbnail') : null,
-                'medium_url' => $media->collection_name === 'images' ? $media->getUrl('medium') : null,
+                'url' => $media->getFullUrl(),
+                'thumbnail_url' => $media->collection_name === 'images' ? $media->getFullUrl('thumbnail') : null,
+                'medium_url' => $media->collection_name === 'images' ? $media->getFullUrl('medium') : null,
             ])),
             'discounts' => $this->whenLoaded('discounts', fn () => $this->discounts->map(fn ($discount) => [
                 'id' => $discount->id,
