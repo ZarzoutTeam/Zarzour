@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Widgets\SalesOverviewWidget;
 use App\Filament\Widgets\TopSellingProductsWidget;
@@ -32,6 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
+            ->profile(EditProfile::class, isSimple: false)
             ->brandName('Zarzour Sport')
             ->brandLogo(fn () => view('filament.components.brand'))
             ->brandLogoHeight('44px')

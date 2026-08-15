@@ -37,10 +37,19 @@ class HomepageSettingForm
                             ->label('الصورة الرئيسية')
                             ->collection('hero_image')
                             ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatioOptions([
+                                null,
+                                '3:1',
+                                '21:9',
+                                '16:9',
+                                '2:1',
+                            ])
                             ->required(fn (Get $get): bool => (bool) $get('hero_enabled') && $get('hero_media_type') === 'image')
                             ->visible(fn (Get $get): bool => $get('hero_media_type') === 'image')
                             ->maxSize(config('catalog.media.max_image_size_kb'))
                             ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
+                            ->helperText('يمكنك قص الصورة أو تدويرها وتكبيرها بعد الرفع.')
                             ->columnSpanFull(),
                         SpatieMediaLibraryFileUpload::make('hero_video')
                             ->label('الفيديو الرئيسي')
@@ -55,10 +64,16 @@ class HomepageSettingForm
                             ->label('صورة غلاف الفيديو')
                             ->collection('hero_poster')
                             ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatioOptions([
+                                null,
+                                '16:9',
+                                '21:9',
+                            ])
                             ->visible(fn (Get $get): bool => $get('hero_media_type') === 'video')
                             ->maxSize(config('catalog.media.max_image_size_kb'))
                             ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
-                            ->helperText('اختيارية، وتظهر قبل بدء تشغيل الفيديو.')
+                            ->helperText('اختيارية وتظهر قبل تشغيل الفيديو، ويمكن قصها أو تدويرها بعد الرفع.')
                             ->columnSpanFull(),
                     ]),
                 Section::make('طرق الدفع')

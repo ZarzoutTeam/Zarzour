@@ -79,11 +79,20 @@ class ProductForm
                     ->label('الصور')
                     ->collection('images')
                     ->image()
+                    ->imageEditor()
+                    ->imageEditorAspectRatioOptions([
+                        null,
+                        '1:1',
+                        '4:5',
+                        '3:4',
+                        '16:9',
+                    ])
                     ->multiple()
                     ->reorderable()
                     ->panelLayout('grid')
                     ->maxSize(config('catalog.media.max_image_size_kb'))
                     ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
+                    ->helperText('يمكنك تعديل كل صورة بعد رفعها: قص، تدوير، تكبير وتصغير.')
                     ->columnSpanFull(),
                 SpatieMediaLibraryFileUpload::make('video')
                     ->label('فيديو')

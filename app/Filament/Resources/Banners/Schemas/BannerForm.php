@@ -49,9 +49,18 @@ class BannerForm
                     ->label('الصورة')
                     ->collection('image')
                     ->image()
+                    ->imageEditor()
+                    ->imageEditorAspectRatioOptions([
+                        null,
+                        '3:1',
+                        '21:9',
+                        '16:9',
+                        '2:1',
+                    ])
                     ->required()
                     ->maxSize(config('catalog.media.max_image_size_kb'))
                     ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
+                    ->helperText('بعد الرفع يمكنك قص الصورة أو تدويرها وتكبيرها. نسبة 3:1 مناسبة غالباً للبانر العريض.')
                     ->columnSpanFull(),
             ]);
     }
