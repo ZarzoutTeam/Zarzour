@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Banners\Tables;
 
+use App\Models\Banner;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -38,6 +39,22 @@ class BannersTable
                 IconColumn::make('is_active')
                     ->label('الحالة')
                     ->boolean(),
+                TextColumn::make('visibility_status')
+                    ->label('الظهور الآن')
+                    ->state(fn (Banner $record): string => match (true) {
+                        ! $record->hasMedia('image') => 'الصورة مفقودة',
+                        ! $record->is_active => 'غير مفعّل',
+                        $record->starts_at !== null && $record->starts_at->isFuture() => 'لم يبدأ',
+                        $record->ends_at !== null && $record->ends_at->isPast() => 'منتهي',
+                        default => 'ظاهر الآن',
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'ظاهر الآن' => 'success',
+                        'لم يبدأ' => 'info',
+                        'منتهي' => 'warning',
+                        default => 'danger',
+                    }),
                 TextColumn::make('starts_at')
                     ->label('البدء')
                     ->dateTime()

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\BannerController;
 use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\CheckoutConfigController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\HomeController;
 use App\Http\Controllers\Api\V1\OrderController;
@@ -25,6 +26,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     });
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+    Route::get('/checkout/config', CheckoutConfigController::class)->name('checkout.config');
 
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 

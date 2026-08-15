@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -26,6 +27,16 @@ class ProductController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $currency = strtoupper((string) $request->query('currency', 'SYP'));
+
+        if (! in_array($currency, ['SYP', 'USD'], true)) {
+            throw ValidationException::withMessages([
+                'currency' => ['العملة يجب أن تكون SYP أو USD.'],
+            ]);
+        }
+
+        $priceColumn = $currency === 'USD' ? 'price_usd' : 'price_syp';
+
         $products = QueryBuilder::for(Product::class)
             ->allowedFilters([
                 AllowedFilter::callback('category_id', function (Builder $query, $value) {
@@ -36,8 +47,8 @@ class ProductController extends Controller
 
                     $query->whereIn('category_id', $categoryIds);
                 }),
-                AllowedFilter::callback('price_min', fn (Builder $query, $value) => $query->where('price', '>=', $value)),
-                AllowedFilter::callback('price_max', fn (Builder $query, $value) => $query->where('price', '<=', $value)),
+                AllowedFilter::callback('price_min', fn (Builder $query, $value) => $query->where($priceColumn, '>=', $value)),
+                AllowedFilter::callback('price_max', fn (Builder $query, $value) => $query->where($priceColumn, '<=', $value)),
                 AllowedFilter::callback('in_stock', function (Builder $query, $value) {
                     if (filter_var($value, FILTER_VALIDATE_BOOLEAN)) {
                         $query->whereColumn('stock_quantity', '>', 'reserved_quantity');
@@ -49,7 +60,7 @@ class ProductController extends Controller
             ])
             ->allowedSorts([
                 AllowedSort::field('created_at'),
-                AllowedSort::field('price'),
+                AllowedSort::field('price', $priceColumn),
             ])
             ->defaultSort('-created_at')
             ->where('is_active', true)
@@ -58,6 +69,7 @@ class ProductController extends Controller
             ->withQueryString();
 
         return $this->success([
+            'currency' => $currency,
             'items' => ProductListResource::collection($products->items()),
             'pagination' => [
                 'current_page' => $products->currentPage(),
@@ -79,7 +91,7 @@ class ProductController extends Controller
                 'discounts' => fn ($query) => $query->where('is_active', true)
                     ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
                     ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now())),
-                'offers' => fn ($query) => $query->where('is_active', true),
+                'offers' => fn ($query) => $query->activeNow()->with('gifts.giftProduct'),
             ])
             ->firstOrFail();
 

@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             ProvinceSeeder::class,
             SettingSeeder::class,
+            HomepageSettingSeeder::class,
         ]);
     }
 }

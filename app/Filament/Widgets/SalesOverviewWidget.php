@@ -28,7 +28,7 @@ class SalesOverviewWidget extends StatsOverviewWidget
             ->pluck('aggregate', 'status');
 
         $stats = [
-            Stat::make('إجمالي المبيعات', number_format((float) $totalSales, 2))
+            Stat::make('إجمالي المبيعات', number_format((float) $totalSales, 2).' ل.س')
                 ->color('success'),
         ];
 

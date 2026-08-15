@@ -2,8 +2,10 @@
 
 namespace App\Observers;
 
+use App\Models\Banner;
+use App\Models\HomepageSetting;
 use App\Models\Product;
-use Illuminate\Support\Facades\Cache;
+use App\Support\CatalogCache;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ProductMediaObserver
@@ -20,12 +22,27 @@ class ProductMediaObserver
 
     private function invalidateIfRelevant(Media $media): void
     {
+        if ($media->model_type === Banner::class && $media->collection_name === 'image') {
+            CatalogCache::forgetBanners();
+            CatalogCache::forgetHome();
+
+            return;
+        }
+
+        if ($media->model_type === HomepageSetting::class) {
+            CatalogCache::forgetHome();
+
+            return;
+        }
+
         if ($media->model_type !== Product::class || $media->collection_name !== 'images') {
             return;
         }
 
-        if (Product::whereKey($media->model_id)->whereHas('banners')->exists()) {
-            Cache::forget('banners.public.active');
+        CatalogCache::forgetHome();
+
+        if (Product::query()->whereKey($media->model_id)->whereHas('banners')->exists()) {
+            CatalogCache::forgetBanners();
         }
     }
 }

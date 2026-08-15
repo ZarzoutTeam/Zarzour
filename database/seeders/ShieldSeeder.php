@@ -27,6 +27,7 @@ class ShieldSeeder extends Seeder
 
         // 2. Seed roles with permissions
         static::makeRolesWithPermissions($rolesWithPermissions);
+        static::grantHomepageSettingPermissions();
 
         // 3. Seed direct permissions
         static::makeDirectPermissions($directPermissions);
@@ -185,6 +186,35 @@ class ShieldSeeder extends Seeder
                 $role->syncPermissions($permissionModels);
             }
         }
+    }
+
+    protected static function grantHomepageSettingPermissions(): void
+    {
+        /** @var Model $roleModel */
+        $roleModel = Utils::getRoleModel();
+        /** @var Model $permissionModel */
+        $permissionModel = Utils::getPermissionModel();
+
+        $role = $roleModel::query()
+            ->where('name', 'super-admin')
+            ->where('guard_name', 'web')
+            ->first();
+
+        if (! $role) {
+            return;
+        }
+
+        $permissions = collect([
+            'ViewAny:HomepageSetting',
+            'View:HomepageSetting',
+            'Create:HomepageSetting',
+            'Update:HomepageSetting',
+        ])->map(fn (string $name) => $permissionModel::firstOrCreate([
+            'name' => $name,
+            'guard_name' => 'web',
+        ]));
+
+        $role->givePermissionTo($permissions);
     }
 
     public static function makeDirectPermissions(string $directPermissions): void

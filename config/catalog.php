@@ -3,7 +3,7 @@
 return [
 
     /*
-     * Upload limits for product media. Sizes are in kilobytes to match
+     * Upload limits for catalog and homepage media. Sizes are in kilobytes to match
      * Filament's FileUpload::maxSize() expectations.
      */
     'media' => [

@@ -27,6 +27,7 @@ class OfferForm
                     ->options([
                         'discount_only' => 'خصم فقط',
                         'discount_with_gift' => 'خصم + هدية',
+                        'gift_only' => 'هدية فقط',
                     ])
                     ->default('discount_only')
                     ->required()
@@ -37,10 +38,13 @@ class OfferForm
                         'percentage' => 'نسبة مئوية',
                         'fixed' => 'مبلغ ثابت',
                     ])
-                    ->required(),
+                    ->required(fn (Get $get): bool => $get('type') !== 'gift_only')
+                    ->visible(fn (Get $get): bool => $get('type') !== 'gift_only'),
                 TextInput::make('discount_value')
                     ->label('قيمة الخصم')
-                    ->required()
+                    ->helperText('عند اختيار مبلغ ثابت تكون القيمة بالليرة السورية لكل قطعة.')
+                    ->required(fn (Get $get): bool => $get('type') !== 'gift_only')
+                    ->visible(fn (Get $get): bool => $get('type') !== 'gift_only')
                     ->numeric()
                     ->minValue(0)
                     ->step(0.01),
@@ -48,8 +52,8 @@ class OfferForm
                     ->label('منتج الهدية')
                     ->options(fn () => Product::query()->active()->pluck('name', 'id'))
                     ->searchable()
-                    ->required(fn (Get $get) => $get('type') === 'discount_with_gift')
-                    ->visible(fn (Get $get) => $get('type') === 'discount_with_gift')
+                    ->required(fn (Get $get): bool => in_array($get('type'), ['discount_with_gift', 'gift_only'], true))
+                    ->visible(fn (Get $get): bool => in_array($get('type'), ['discount_with_gift', 'gift_only'], true))
                     ->dehydrated()
                     ->helperText('المنتج الذي سيُمنح مجاناً عند توفر مخزونه لحظة الطلب.'),
                 DateTimePicker::make('starts_at')

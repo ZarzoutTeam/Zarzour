@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Api\V1\Orders;
 
+use App\Models\HomepageSetting;
 use App\Rules\ActiveProvinceExists;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreOrderRequest extends FormRequest
 {
@@ -23,7 +25,7 @@ class StoreOrderRequest extends FormRequest
             'province_id' => ['required', 'integer', new ActiveProvinceExists],
             'shipping_address' => ['required', 'string'],
             'extra_notes' => ['nullable', 'string'],
-            'payment_method' => ['required', 'in:cod,sham_cash,visa_ui'],
+            'payment_method' => ['required', Rule::in(HomepageSetting::enabledPaymentMethodKeys())],
             'coupon_code' => ['nullable', 'string'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],

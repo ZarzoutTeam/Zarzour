@@ -4,7 +4,7 @@ namespace App\Observers;
 
 use App\Exceptions\OverlappingOfferException;
 use App\Models\Offer;
-use Illuminate\Support\Facades\Cache;
+use App\Support\CatalogCache;
 
 class OfferObserver
 {
@@ -21,11 +21,11 @@ class OfferObserver
 
     public function saved(Offer $offer): void
     {
-        Cache::forget('home.public.snapshot');
+        CatalogCache::forgetHome();
     }
 
     public function deleted(Offer $offer): void
     {
-        Cache::forget('home.public.snapshot');
+        CatalogCache::forgetHome();
     }
 }

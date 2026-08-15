@@ -11,6 +11,7 @@ use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class EditOffer extends EditRecord
 {
@@ -37,8 +38,23 @@ class EditOffer extends EditRecord
         /** @var Offer $record */
         $giftProductId = Arr::pull($data, 'gift_product_id');
 
+        if (($data['type'] ?? null) === 'gift_only') {
+            $data['discount_type'] = null;
+            $data['discount_value'] = null;
+        }
+
         try {
-            $record->update($data);
+            return DB::transaction(function () use ($record, $data, $giftProductId): Offer {
+                $record->update($data);
+
+                if ($record->hasGift() && $giftProductId) {
+                    $record->gifts()->updateOrCreate([], ['gift_product_id' => $giftProductId]);
+                } else {
+                    $record->gifts()->delete();
+                }
+
+                return $record;
+            });
         } catch (OverlappingOfferException $exception) {
             Notification::make()
                 ->danger()
@@ -47,13 +63,5 @@ class EditOffer extends EditRecord
 
             throw new Halt;
         }
-
-        if ($record->type === 'discount_with_gift' && $giftProductId) {
-            $record->gifts()->updateOrCreate([], ['gift_product_id' => $giftProductId]);
-        } else {
-            $record->gifts()->delete();
-        }
-
-        return $record;
     }
 }

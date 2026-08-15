@@ -3,17 +3,17 @@
 namespace App\Observers;
 
 use App\Models\Discount;
-use Illuminate\Support\Facades\Cache;
+use App\Support\CatalogCache;
 
 class DiscountObserver
 {
     public function saved(Discount $discount): void
     {
-        Cache::forget('home.public.snapshot');
+        CatalogCache::forgetHome();
     }
 
     public function deleted(Discount $discount): void
     {
-        Cache::forget('home.public.snapshot');
+        CatalogCache::forgetHome();
     }
 }

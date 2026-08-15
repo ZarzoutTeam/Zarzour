@@ -29,6 +29,7 @@ class DiscountForm
                     ->required(),
                 TextInput::make('value')
                     ->label('القيمة')
+                    ->helperText('عند اختيار مبلغ ثابت تكون القيمة بالليرة السورية.')
                     ->required()
                     ->numeric()
                     ->minValue(0)

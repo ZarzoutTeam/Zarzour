@@ -22,6 +22,7 @@ class ProductFactory extends Factory
             'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1, 100000),
             'description' => fake()->paragraph(),
             'price' => fake()->randomFloat(2, 5, 500),
+            'price_usd' => fake()->randomFloat(2, 1, 50),
             'category_id' => Category::factory(),
             'is_active' => true,
             'extra_info' => null,

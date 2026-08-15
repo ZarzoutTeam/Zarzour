@@ -3,27 +3,28 @@
 namespace App\Observers;
 
 use App\Models\Product;
-use Illuminate\Support\Facades\Cache;
+use App\Support\CatalogCache;
 
 class ProductObserver
 {
-    private const BANNER_RELEVANT_FIELDS = ['name', 'slug', 'price'];
+    private const BANNER_RELEVANT_FIELDS = ['name', 'slug', 'price_syp', 'price_usd'];
 
-    private const HOME_RELEVANT_FIELDS = ['name', 'slug', 'price', 'is_active', 'is_featured', 'category_id'];
+    private const HOME_RELEVANT_FIELDS = ['name', 'slug', 'price_syp', 'price_usd', 'is_active', 'is_featured', 'category_id'];
 
     public function saved(Product $product): void
     {
         if ($product->wasChanged(self::BANNER_RELEVANT_FIELDS) && $product->banners()->exists()) {
-            Cache::forget('banners.public.active');
+            CatalogCache::forgetBanners();
         }
 
         if ($product->wasRecentlyCreated || $product->wasChanged(self::HOME_RELEVANT_FIELDS)) {
-            Cache::forget('home.public.snapshot');
+            CatalogCache::forgetHome();
         }
     }
 
     public function deleted(Product $product): void
     {
-        Cache::forget('home.public.snapshot');
+        CatalogCache::forgetBanners();
+        CatalogCache::forgetHome();
     }
 }

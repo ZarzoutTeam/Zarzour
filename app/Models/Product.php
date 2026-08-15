@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,8 @@ class Product extends Model implements HasMedia
         'slug',
         'description',
         'price',
+        'price_syp',
+        'price_usd',
         'category_id',
         'is_active',
         'is_featured',
@@ -32,13 +35,26 @@ class Product extends Model implements HasMedia
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
+            'price_syp' => 'decimal:2',
+            'price_usd' => 'decimal:2',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'extra_info' => 'array',
             'stock_quantity' => 'integer',
             'reserved_quantity' => 'integer',
         ];
+    }
+
+    /**
+     * Backward-compatible alias for integrations and tests that still use `price`.
+     * Checkout in API v1 remains denominated in SYP.
+     */
+    protected function price(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): mixed => $this->price_syp,
+            set: fn (mixed $value): array => ['price_syp' => $value],
+        );
     }
 
     public function registerMediaCollections(): void

@@ -44,6 +44,9 @@ class OrderInfolist
                             TextEntry::make('payment_method')
                                 ->label('طريقة الدفع')
                                 ->formatStateUsing(fn (string $state): string => self::PAYMENT_METHOD_LABELS[$state] ?? $state),
+                            TextEntry::make('currency')
+                                ->label('عملة الطلب')
+                                ->formatStateUsing(fn (?string $state): string => $state === 'USD' ? 'دولار أمريكي' : 'ليرة سورية'),
                             TextEntry::make('created_at')->label('تاريخ الطلب')->dateTime(),
                         ]),
                     ]),
@@ -55,8 +58,8 @@ class OrderInfolist
                                 Grid::make(5)->schema([
                                     TextEntry::make('product_name_snapshot')->label('المنتج'),
                                     TextEntry::make('quantity')->label('الكمية'),
-                                    TextEntry::make('unit_price_snapshot')->label('سعر الوحدة')->numeric(2),
-                                    TextEntry::make('line_total')->label('الإجمالي')->numeric(2),
+                                    TextEntry::make('unit_price_snapshot')->label('سعر الوحدة')->numeric(2)->suffix(' ل.س'),
+                                    TextEntry::make('line_total')->label('الإجمالي')->numeric(2)->suffix(' ل.س'),
                                     IconEntry::make('is_gift')->label('هدية؟')->boolean(),
                                 ]),
                             ]),
@@ -64,10 +67,10 @@ class OrderInfolist
                 Section::make('ملخص الفاتورة')
                     ->schema([
                         Grid::make(3)->schema([
-                            TextEntry::make('subtotal')->label('المجموع الفرعي')->numeric(2),
-                            TextEntry::make('discount_amount')->label('قيمة الخصم')->numeric(2),
-                            TextEntry::make('shipping_fee')->label('رسوم الشحن')->numeric(2),
-                            TextEntry::make('total')->label('الإجمالي الكلي')->numeric(2),
+                            TextEntry::make('subtotal')->label('المجموع الفرعي')->numeric(2)->suffix(' ل.س'),
+                            TextEntry::make('discount_amount')->label('قيمة الخصم')->numeric(2)->suffix(' ل.س'),
+                            TextEntry::make('shipping_fee')->label('رسوم الشحن')->numeric(2)->suffix(' ل.س'),
+                            TextEntry::make('total')->label('الإجمالي الكلي')->numeric(2)->suffix(' ل.س'),
                             TextEntry::make('coupon.code')->label('كود الخصم المستخدم')->placeholder('—'),
                             TextEntry::make('appliedOffer.type')->label('العرض المطبّق')->placeholder('—'),
                         ]),

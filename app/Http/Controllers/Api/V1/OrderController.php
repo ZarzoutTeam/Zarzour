@@ -64,6 +64,7 @@ class OrderController extends Controller
                 'coupon_id' => $pricing['coupon']['id'] ?? null,
                 'applied_offer_id' => $primaryGiftOfferId,
                 'payment_method' => $data['payment_method'],
+                'currency' => 'SYP',
                 'status' => 'pending',
             ]);
 
@@ -101,6 +102,7 @@ class OrderController extends Controller
         return $this->success([
             'order_id' => $order->id,
             'status' => $order->status,
+            'currency' => $order->currency,
             'subtotal' => (float) $order->subtotal,
             'discount_amount' => (float) $order->discount_amount,
             'shipping_fee' => (float) $order->shipping_fee,

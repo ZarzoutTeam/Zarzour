@@ -42,7 +42,7 @@ class CategoryForm
                     )
                     ->searchable()
                     ->native(false)
-                    ->helperText('اتركه فارغاً لجعل هذه فئة رئيسية.'),
+                    ->helperText('اتركه فارغاً لتظهر الفئة في المستوى الرئيسي. عند اختيار فئة أب ستظهر هذه الفئة داخلها فقط.'),
                 TextInput::make('sort_order')
                     ->label('الترتيب')
                     ->required()

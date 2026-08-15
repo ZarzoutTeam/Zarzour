@@ -30,4 +30,13 @@ class OfferFactory extends Factory
             'type' => 'discount_with_gift',
         ]);
     }
+
+    public function giftOnly(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => 'gift_only',
+            'discount_type' => null,
+            'discount_value' => null,
+        ]);
+    }
 }

@@ -46,6 +46,7 @@ class Order extends Model
         'coupon_id',
         'applied_offer_id',
         'payment_method',
+        'currency',
         'status',
         'reserved_until',
     ];

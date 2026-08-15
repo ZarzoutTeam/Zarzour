@@ -23,12 +23,24 @@ class OffersTable
                     ->searchable(),
                 TextColumn::make('type')
                     ->label('النوع')
-                    ->badge(),
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'discount_only' => 'خصم فقط',
+                        'discount_with_gift' => 'خصم + هدية',
+                        'gift_only' => 'هدية فقط',
+                        default => $state,
+                    }),
                 TextColumn::make('discount_type')
-                    ->label('نوع الخصم'),
+                    ->label('نوع الخصم')
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'percentage' => 'نسبة مئوية',
+                        'fixed' => 'مبلغ ثابت',
+                        default => '—',
+                    }),
                 TextColumn::make('discount_value')
                     ->label('قيمة الخصم')
-                    ->numeric(2),
+                    ->numeric(2)
+                    ->placeholder('—'),
                 TextColumn::make('gifts.giftProduct.name')
                     ->label('منتج الهدية')
                     ->placeholder('—'),

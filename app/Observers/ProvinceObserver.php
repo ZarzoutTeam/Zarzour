@@ -3,17 +3,17 @@
 namespace App\Observers;
 
 use App\Models\Province;
-use Illuminate\Support\Facades\Cache;
+use App\Support\CatalogCache;
 
 class ProvinceObserver
 {
     public function saved(Province $province): void
     {
-        Cache::forget('provinces.public.active');
+        CatalogCache::forgetProvinces();
     }
 
     public function deleted(Province $province): void
     {
-        Cache::forget('provinces.public.active');
+        CatalogCache::forgetProvinces();
     }
 }

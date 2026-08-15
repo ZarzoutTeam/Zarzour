@@ -39,12 +39,20 @@ class ProductForm
                     ->searchable()
                     ->preload()
                     ->required(),
-                TextInput::make('price')
-                    ->label('السعر')
+                TextInput::make('price_syp')
+                    ->label('السعر بالليرة السورية')
                     ->required()
                     ->numeric()
                     ->minValue(0)
-                    ->step(0.01),
+                    ->step(0.01)
+                    ->suffix('ل.س'),
+                TextInput::make('price_usd')
+                    ->label('السعر بالدولار')
+                    ->required()
+                    ->numeric()
+                    ->minValue(0)
+                    ->step(0.01)
+                    ->suffix('USD'),
                 TextInput::make('stock_quantity')
                     ->label('الكمية بالمخزون')
                     ->required()

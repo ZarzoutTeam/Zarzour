@@ -37,6 +37,19 @@ class CategoriesTable
                 IconColumn::make('is_active')
                     ->label('الحالة')
                     ->boolean(),
+                TextColumn::make('display_location')
+                    ->label('مكان الظهور')
+                    ->state(fn (Category $record): string => match (true) {
+                        ! $record->is_active => 'غير ظاهرة',
+                        $record->parent_id === null => 'رئيسية',
+                        ! $record->parent?->is_active => 'الفئة الأب غير مفعّلة',
+                        default => 'ضمن '.($record->parent?->name ?? 'الفئة الأب'),
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'غير ظاهرة', 'الفئة الأب غير مفعّلة' => 'danger',
+                        default => 'success',
+                    }),
                 TextColumn::make('sort_order')
                     ->label('الترتيب')
                     ->numeric()

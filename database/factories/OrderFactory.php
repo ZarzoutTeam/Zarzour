@@ -29,6 +29,7 @@ class OrderFactory extends Factory
             'coupon_id' => null,
             'applied_offer_id' => null,
             'payment_method' => fake()->randomElement(['cod', 'sham_cash', 'visa_ui']),
+            'currency' => 'SYP',
             'status' => 'pending',
         ];
     }

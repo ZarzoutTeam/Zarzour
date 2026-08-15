@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\BannerResource;
 use App\Models\Banner;
+use App\Support\CatalogCache;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -15,7 +16,7 @@ class BannerController extends Controller
 
     public function index(): JsonResponse
     {
-        $banners = Cache::remember('banners.public.active', now()->addMinutes(5), function () {
+        $banners = Cache::remember(CatalogCache::ACTIVE_BANNERS, now()->addMinutes(5), function () {
             return Banner::query()
                 ->eligible()
                 ->orderBy('priority')

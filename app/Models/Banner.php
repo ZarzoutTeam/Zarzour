@@ -78,6 +78,7 @@ class Banner extends Model implements HasMedia
     {
         return $query
             ->where('is_active', true)
+            ->whereHas('media', fn (Builder $q) => $q->where('collection_name', 'image'))
             ->where(fn (Builder $q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
             ->where(fn (Builder $q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()));
     }

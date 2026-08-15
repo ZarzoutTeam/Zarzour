@@ -15,7 +15,7 @@ use Illuminate\Support\Carbon;
  * per Zarzour Sport's approved pricing rules:
  *   1. Direct product discount (discounts table)
  *   2. Coupon (general or customer-specific via phone_number), on the discounted total
- *   3. Offer (product-level discount + optional gift, checked last; gift availability
+ *   3. Offer (product-level discount and/or gift, checked last; gift availability
  *      is always re-checked live against current stock, never from a stored flag)
  *   4. Shipping fee (Epic 7) — a fixed per-province amount added on top of the total
  *      above, after every discount. It is never itself subject to any discount and
@@ -29,6 +29,7 @@ class PriceCalculationService
     /**
      * @param  array<int, array{product_id: int, quantity: int}>  $lines
      * @return array{
+     *     currency: string,
      *     subtotal: float,
      *     discount_amount: float,
      *     total_before_shipping: float,
@@ -47,6 +48,7 @@ class PriceCalculationService
      *         offer_discount_amount: float,
      *         final_line_total: float,
      *         offer_id: int|null,
+     *         offer_applied: bool,
      *         gift: array{product_id: int, name: string, offer_id: int}|null,
      *     }>,
      * }
@@ -75,7 +77,7 @@ class PriceCalculationService
             }
 
             $quantity = (int) $line['quantity'];
-            $unitPrice = (float) $product->price;
+            $unitPrice = (float) $product->price_syp;
             $originalLineTotal = $this->money($unitPrice * $quantity);
 
             $directDiscount = $product->discounts->first();
@@ -135,10 +137,16 @@ class PriceCalculationService
 
             if ($offer !== null) {
                 $offerId = $offer->id;
-                $offerDiscountAmount = $this->applyDiscount($offer->discount_type, $offer->discount_value, $row['unit_price'], $row['quantity'], $lineAfterCoupon);
+                if ($offer->hasDiscount()) {
+                    $offerDiscountAmount = $this->applyDiscount($offer->discount_type, $offer->discount_value, $row['unit_price'], $row['quantity'], $lineAfterCoupon);
+                }
 
-                if ($offer->type === 'discount_with_gift') {
+                if ($offer->hasGift()) {
                     $gift = $this->resolveGift($offer);
+                }
+
+                if ($offer->type === 'gift_only' && $gift === null) {
+                    $offerId = null;
                 }
             }
 
@@ -154,6 +162,7 @@ class PriceCalculationService
                 'offer_discount_amount' => $offerDiscountAmount,
                 'final_line_total' => $finalLineTotal,
                 'offer_id' => $offerId,
+                'offer_applied' => $offerId !== null,
                 'gift' => $gift,
             ];
         }
@@ -168,6 +177,7 @@ class PriceCalculationService
         }
 
         return [
+            'currency' => 'SYP',
             'subtotal' => $subtotal,
             'discount_amount' => $this->money($subtotal - $total),
             'total_before_shipping' => $total,
@@ -227,8 +237,8 @@ class PriceCalculationService
     /**
      * Rule 4: gift availability is always re-checked live at the moment of
      * calculation (preview or order creation) against current stock, never
-     * from a stored/cached flag. If unavailable, the offer silently degrades
-     * to discount-only — no gift, no error.
+     * from a stored/cached flag. If unavailable, a discount-with-gift offer keeps
+     * its discount, while a gift-only offer is reported as not applied.
      *
      * @return array{product_id: int, name: string, offer_id: int}|null
      */

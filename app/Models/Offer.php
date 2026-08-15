@@ -43,6 +43,16 @@ class Offer extends Model
             ->where(fn (Builder $q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()));
     }
 
+    public function hasDiscount(): bool
+    {
+        return in_array($this->type, ['discount_only', 'discount_with_gift'], true);
+    }
+
+    public function hasGift(): bool
+    {
+        return in_array($this->type, ['discount_with_gift', 'gift_only'], true);
+    }
+
     /**
      * Rule 3: at most one active offer per product. Two active date ranges
      * conflict if they overlap at all (null start/end means open-ended).

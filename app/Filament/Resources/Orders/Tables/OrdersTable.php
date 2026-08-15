@@ -33,6 +33,7 @@ class OrdersTable
                 TextColumn::make('total')
                     ->label('الإجمالي')
                     ->numeric(2)
+                    ->suffix(' ل.س')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('تاريخ الطلب')

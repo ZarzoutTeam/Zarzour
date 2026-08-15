@@ -37,9 +37,14 @@ class ProductsTable
                     ->label('الفئة')
                     ->badge()
                     ->searchable(),
-                TextColumn::make('price')
-                    ->label('السعر')
+                TextColumn::make('price_syp')
+                    ->label('السعر ل.س')
                     ->numeric(2)
+                    ->sortable(),
+                TextColumn::make('price_usd')
+                    ->label('السعر USD')
+                    ->numeric(2)
+                    ->placeholder('—')
                     ->sortable(),
                 TextColumn::make('available_quantity')
                     ->label('الكمية المتاحة')

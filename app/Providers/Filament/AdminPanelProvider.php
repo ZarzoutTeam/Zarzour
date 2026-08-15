@@ -53,7 +53,14 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::SIDEBAR_LOGO_AFTER,
                 fn () => view('filament.components.brand', ['compact' => true]),
             )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => view('filament.components.notification-sound'),
+            )
             ->databaseNotifications()
+            ->databaseNotificationsPolling('15s')
+            ->resourceCreatePageRedirect('index')
+            ->resourceEditPageRedirect('index')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

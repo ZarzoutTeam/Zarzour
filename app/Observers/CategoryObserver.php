@@ -3,19 +3,19 @@
 namespace App\Observers;
 
 use App\Models\Category;
-use Illuminate\Support\Facades\Cache;
+use App\Support\CatalogCache;
 
 class CategoryObserver
 {
     public function saved(Category $category): void
     {
-        Cache::forget('categories.public.tree');
-        Cache::forget('home.public.snapshot');
+        CatalogCache::forgetCategories();
+        CatalogCache::forgetHome();
     }
 
     public function deleted(Category $category): void
     {
-        Cache::forget('categories.public.tree');
-        Cache::forget('home.public.snapshot');
+        CatalogCache::forgetCategories();
+        CatalogCache::forgetHome();
     }
 }

@@ -30,6 +30,7 @@ class CouponForm
                     ->required(),
                 TextInput::make('value')
                     ->label('القيمة')
+                    ->helperText('عند اختيار مبلغ ثابت تكون القيمة بالليرة السورية.')
                     ->required()
                     ->numeric()
                     ->minValue(0)
@@ -49,7 +50,7 @@ class CouponForm
                     ->required(fn (Get $get) => $get('scope') === 'user')
                     ->visible(fn (Get $get) => $get('scope') === 'user'),
                 TextInput::make('min_order_amount')
-                    ->label('الحد الأدنى لقيمة الطلب')
+                    ->label('الحد الأدنى لقيمة الطلب (ل.س)')
                     ->numeric()
                     ->minValue(0)
                     ->step(0.01),

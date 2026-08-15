@@ -320,6 +320,46 @@
     color: var(--zs-green-ink);
 }
 
+:is(
+        .fi-topbar-database-notifications-btn,
+        .fi-sidebar-database-notifications-btn
+    ):has(.fi-badge) {
+    border: 1px solid #b45309;
+    background: #f59e0b;
+    color: #1f2937;
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, #f59e0b 22%, transparent),
+        0 8px 18px color-mix(in srgb, #b45309 22%, transparent);
+    animation: zs-notification-pulse 1.8s ease-in-out infinite;
+}
+
+:is(
+        .fi-topbar-database-notifications-btn,
+        .fi-sidebar-database-notifications-btn
+    ):has(.fi-badge):hover {
+    background: #fbbf24;
+}
+
+@keyframes zs-notification-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.06);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :is(
+            .fi-topbar-database-notifications-btn,
+            .fi-sidebar-database-notifications-btn
+        ):has(.fi-badge) {
+        animation: none;
+    }
+}
+
 /*
  * Layer 4: surfaces
  */

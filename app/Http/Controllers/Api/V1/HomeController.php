@@ -9,8 +9,10 @@ use App\Http\Resources\Api\V1\ProductListResource;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Discount;
+use App\Models\HomepageSetting;
 use App\Models\Offer;
 use App\Models\Product;
+use App\Support\CatalogCache;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
@@ -24,13 +26,17 @@ class HomeController extends Controller
 
     public function index(): JsonResponse
     {
-        $snapshot = Cache::remember('home.public.snapshot', now()->addMinutes(5), fn () => [
+        $snapshot = Cache::remember(CatalogCache::HOME_SNAPSHOT, now()->addMinutes(5), fn () => [
             'banners' => $this->banners(),
             'categories' => $this->categories(),
             'latest_products' => $this->latestProducts(),
             'featured_products' => $this->featuredProducts(),
             'offered_products' => $this->offeredProducts(),
+            'homepage_setting' => $this->homepageSetting(),
         ]);
+
+        /** @var HomepageSetting|null $homepageSetting */
+        $homepageSetting = $snapshot['homepage_setting'];
 
         return $this->success([
             'banners' => BannerResource::collection($snapshot['banners']),
@@ -38,7 +44,17 @@ class HomeController extends Controller
             'latest_products' => ProductListResource::collection($snapshot['latest_products']),
             'featured_products' => ProductListResource::collection($snapshot['featured_products']),
             'offered_products' => ProductListResource::collection($snapshot['offered_products']),
+            'hero_media' => $homepageSetting?->heroMediaPayload(),
+            'payment_methods' => $homepageSetting?->paymentMethodsPayload()
+                ?? HomepageSetting::publicPaymentMethods(),
         ]);
+    }
+
+    private function homepageSetting(): ?HomepageSetting
+    {
+        return HomepageSetting::query()
+            ->with('media')
+            ->first();
     }
 
     /**

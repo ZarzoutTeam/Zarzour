@@ -26,6 +26,7 @@ class OrderResource extends JsonResource
             'shipping_fee' => (float) $this->shipping_fee,
             'total' => (float) $this->total,
             'payment_method' => $this->payment_method,
+            'currency' => $this->currency,
             'status' => $this->status,
             'coupon_code' => $this->whenLoaded('coupon', fn () => $this->coupon?->code),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),

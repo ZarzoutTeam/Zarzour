@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Models\Offer;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -19,7 +20,11 @@ class ProductDetailResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'price' => (float) $this->price,
+            'price' => (float) $this->price_syp,
+            'prices' => [
+                'SYP' => (float) $this->price_syp,
+                'USD' => $this->price_usd !== null ? (float) $this->price_usd : null,
+            ],
             'extra_info' => $this->extra_info,
             'stock_quantity' => $this->stock_quantity,
             'available_quantity' => $this->available_quantity,
@@ -32,8 +37,12 @@ class ProductDetailResource extends JsonResource
                 'id' => $media->id,
                 'collection' => $media->collection_name,
                 'url' => $media->getFullUrl(),
-                'thumbnail_url' => $media->collection_name === 'images' ? $media->getFullUrl('thumbnail') : null,
-                'medium_url' => $media->collection_name === 'images' ? $media->getFullUrl('medium') : null,
+                'thumbnail_url' => $media->collection_name === 'images'
+                    ? ($media->hasGeneratedConversion('thumbnail') ? $media->getFullUrl('thumbnail') : $media->getFullUrl())
+                    : null,
+                'medium_url' => $media->collection_name === 'images'
+                    ? ($media->hasGeneratedConversion('medium') ? $media->getFullUrl('medium') : $media->getFullUrl())
+                    : null,
             ])),
             'discounts' => $this->whenLoaded('discounts', fn () => $this->discounts->map(fn ($discount) => [
                 'id' => $discount->id,
@@ -42,12 +51,29 @@ class ProductDetailResource extends JsonResource
                 'starts_at' => $discount->starts_at,
                 'ends_at' => $discount->ends_at,
             ])),
-            'offers' => $this->whenLoaded('offers', fn () => $this->offers->map(fn ($offer) => [
-                'id' => $offer->id,
-                'type' => $offer->type,
-                'discount_type' => $offer->discount_type,
-                'discount_value' => (float) $offer->discount_value,
-            ])),
+            'offers' => $this->whenLoaded('offers', fn () => $this->offers->map(
+                fn (Offer $offer): array => $this->offerPayload($offer)
+            )),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function offerPayload(Offer $offer): array
+    {
+        $giftProduct = $offer->gifts->first()?->giftProduct;
+
+        return [
+            'id' => $offer->id,
+            'type' => $offer->type,
+            'discount_type' => $offer->discount_type,
+            'discount_value' => $offer->discount_value !== null ? (float) $offer->discount_value : null,
+            'gift' => $giftProduct ? [
+                'product_id' => $giftProduct->id,
+                'name' => $giftProduct->name,
+                'available' => $giftProduct->available_quantity > 0,
+            ] : null,
         ];
     }
 }

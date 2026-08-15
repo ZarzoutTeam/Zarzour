@@ -23,7 +23,7 @@ class ProvincesTable
                     ->label('اسم المحافظة')
                     ->searchable(),
                 TextInputColumn::make('shipping_fee')
-                    ->label('أجرة الشحن')
+                    ->label('أجرة الشحن (ل.س)')
                     ->type('number')
                     ->rules(['required', 'numeric', 'min:0']),
                 IconColumn::make('is_active')
