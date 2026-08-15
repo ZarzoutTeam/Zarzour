@@ -36,6 +36,7 @@ class HomepageSettingForm
                         SpatieMediaLibraryFileUpload::make('hero_image')
                             ->label('الصورة الرئيسية')
                             ->collection('hero_image')
+                            ->conversion('hero')
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatioOptions([
@@ -54,6 +55,7 @@ class HomepageSettingForm
                         SpatieMediaLibraryFileUpload::make('hero_video')
                             ->label('الفيديو الرئيسي')
                             ->collection('hero_video')
+                            ->previewable(false)
                             ->required(fn (Get $get): bool => (bool) $get('hero_enabled') && $get('hero_media_type') === 'video')
                             ->visible(fn (Get $get): bool => $get('hero_media_type') === 'video')
                             ->maxSize(config('catalog.media.max_video_size_kb'))
@@ -63,6 +65,7 @@ class HomepageSettingForm
                         SpatieMediaLibraryFileUpload::make('hero_poster')
                             ->label('صورة غلاف الفيديو')
                             ->collection('hero_poster')
+                            ->conversion('hero')
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatioOptions([

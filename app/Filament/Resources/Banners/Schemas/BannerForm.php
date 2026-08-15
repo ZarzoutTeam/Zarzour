@@ -48,6 +48,7 @@ class BannerForm
                 SpatieMediaLibraryFileUpload::make('image')
                     ->label('الصورة')
                     ->collection('image')
+                    ->conversion('hero')
                     ->image()
                     ->imageEditor()
                     ->imageEditorAspectRatioOptions([

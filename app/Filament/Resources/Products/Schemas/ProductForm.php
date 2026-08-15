@@ -78,6 +78,7 @@ class ProductForm
                 SpatieMediaLibraryFileUpload::make('images')
                     ->label('الصور')
                     ->collection('images')
+                    ->conversion('medium')
                     ->image()
                     ->imageEditor()
                     ->imageEditorAspectRatioOptions([
@@ -97,6 +98,7 @@ class ProductForm
                 SpatieMediaLibraryFileUpload::make('video')
                     ->label('فيديو')
                     ->collection('video')
+                    ->previewable(false)
                     ->maxSize(config('catalog.media.max_video_size_kb'))
                     ->acceptedFileTypes(config('catalog.media.allowed_video_mimes'))
                     ->columnSpanFull(),
