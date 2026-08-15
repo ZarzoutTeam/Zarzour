@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Discounts\Tables;
 
+use App\Models\Discount;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -22,11 +23,13 @@ class DiscountsTable
                     ->label('المنتج')
                     ->searchable(),
                 TextColumn::make('type')
-                    ->label('النوع')
-                    ->badge(),
+                    ->label('طريقة الخصم')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => $state === 'percentage' ? 'نسبة مئوية' : 'مبلغ ثابت'),
                 TextColumn::make('value')
-                    ->label('القيمة')
-                    ->numeric(2),
+                    ->label('قيمة الخصم')
+                    ->numeric(2)
+                    ->suffix(fn (Discount $record): string => $record->type === 'percentage' ? '%' : ' ل.س'),
                 TextColumn::make('starts_at')
                     ->label('البدء')
                     ->dateTime()

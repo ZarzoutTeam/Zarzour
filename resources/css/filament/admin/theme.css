@@ -79,6 +79,96 @@
     color: var(--zs-charcoal);
 }
 
+/*
+ * The panel locale sets dir="rtl" on the document. These rules make the
+ * direction explicit for custom and third-party surfaces that do not rely on
+ * Filament's logical utility classes, most notably FilePond.
+ */
+html[dir='rtl'] .fi-body,
+html[dir='rtl'] .fi-simple-layout,
+html[dir='rtl'] .fi-main,
+html[dir='rtl'] .fi-modal-window,
+html[dir='rtl'] .fi-dropdown-panel {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir='rtl'] :is(.fi-input, .fi-select-input, textarea) {
+    text-align: right;
+}
+
+html[dir='rtl']
+    :is(
+        input[type='email'],
+        input[type='url'],
+        input[type='tel'],
+        input[type='number'],
+        input[type='date'],
+        input[type='datetime-local'],
+        input[type='time']
+    ) {
+    direction: ltr;
+    text-align: left;
+}
+
+html[dir='rtl'] .fi-fo-file-upload .filepond--root,
+html[dir='rtl'] .fi-fo-file-upload .filepond--drop-label,
+html[dir='rtl'] .fi-fo-file-upload .filepond--file {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir='rtl'] .fi-fo-file-upload .filepond--file-info {
+    margin-inline: 0 0.5em;
+    transform: translateX(0);
+}
+
+html[dir='rtl'] .fi-fo-file-upload .filepond--file-status {
+    margin-inline: auto 2.25em;
+    text-align: left;
+}
+
+html[dir='rtl']
+    .fi-fo-file-upload
+    [data-filepond-item-state*='error']
+    .filepond--file-info,
+html[dir='rtl']
+    .fi-fo-file-upload
+    [data-filepond-item-state*='invalid']
+    .filepond--file-info {
+    margin-inline: 0 2.25em;
+}
+
+html[dir='rtl'] .fi-fo-file-upload .filepond--file [data-align*='left'] {
+    right: 0.5625em;
+    left: auto;
+}
+
+html[dir='rtl'] .fi-fo-file-upload .filepond--file [data-align*='right'] {
+    right: auto;
+    left: 0.5625em;
+}
+
+html[dir='rtl']
+    .fi-fo-file-upload
+    .filepond--progress-indicator[data-align*='right'] {
+    margin-right: 0;
+    margin-left: 0.1875em;
+}
+
+html[dir='rtl']
+    .fi-fo-file-upload
+    .filepond--progress-indicator[data-align*='left'] {
+    margin-right: 0.1875em;
+    margin-left: 0;
+}
+
+html[dir='rtl']
+    .fi-fo-file-upload-editor-control-panel-reset-action {
+    margin-right: auto;
+    margin-left: 0;
+}
+
 .fi-header-heading {
     display: inline-flex;
     align-items: center;

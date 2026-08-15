@@ -11,6 +11,11 @@ class Dashboard extends BaseDashboard
 {
     use HasFiltersForm;
 
+    public function getSubheading(): ?string
+    {
+        return 'ملخص سريع للمبيعات والطلبات والمنتجات الأكثر طلباً.';
+    }
+
     /**
      * @return array<string>
      */
@@ -27,7 +32,7 @@ class Dashboard extends BaseDashboard
         return $schema
             ->components([
                 Select::make('range')
-                    ->label('المدى الزمني')
+                    ->label('الفترة المعروضة')
                     ->options([
                         'all' => 'الكل',
                         'today' => 'اليوم',
@@ -35,6 +40,7 @@ class Dashboard extends BaseDashboard
                         'month' => 'هذا الشهر',
                     ])
                     ->default('all')
+                    ->helperText('يُحدّث اختيارك جميع الإحصاءات والجداول في هذه الصفحة.')
                     ->selectablePlaceholder(false),
             ]);
     }

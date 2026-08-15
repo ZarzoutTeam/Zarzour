@@ -26,6 +26,10 @@ class OrderResource extends Resource
 
     protected static ?string $navigationLabel = 'الطلبات';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'المبيعات والعملاء';
+
+    protected static ?int $navigationSort = 10;
+
     public static function infolist(Schema $schema): Schema
     {
         return OrderInfolist::configure($schema);

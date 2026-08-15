@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders\Tables;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Actions\ChangeOrderStatusAction;
+use App\Models\Order;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
@@ -33,7 +34,7 @@ class OrdersTable
                 TextColumn::make('total')
                     ->label('الإجمالي')
                     ->numeric(2)
-                    ->suffix(' ل.س')
+                    ->suffix(fn (Order $record): string => $record->currency === 'USD' ? ' دولار' : ' ل.س')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('تاريخ الطلب')

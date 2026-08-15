@@ -27,6 +27,10 @@ class DiscountResource extends Resource
 
     protected static ?string $navigationLabel = 'الخصومات';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'التسويق والعروض';
+
+    protected static ?int $navigationSort = 20;
+
     public static function form(Schema $schema): Schema
     {
         return DiscountForm::configure($schema);

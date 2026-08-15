@@ -17,24 +17,26 @@ class HomepageSettingForm
     {
         return $schema
             ->components([
-                Section::make('وسائط الواجهة الرئيسية')
-                    ->description('يمكن عرض صورة رئيسية أو فيديو واحد. البانرات تبقى وحدة مستقلة.')
+                Section::make('الغلاف الرئيسي للتطبيق')
+                    ->description('هذه الوسائط تظهر أعلى الصفحة الرئيسية. أما اللافتات الإعلانية فتُدار من قسم مستقل.')
                     ->schema([
                         Toggle::make('hero_enabled')
-                            ->label('إظهار الوسائط الرئيسية')
+                            ->label('إظهار الغلاف الرئيسي')
+                            ->helperText('عند التعطيل لن تظهر الصورة أو الفيديو في أعلى الصفحة الرئيسية.')
                             ->default(false)
                             ->live(),
                         Select::make('hero_media_type')
-                            ->label('نوع الوسائط')
+                            ->label('نوع الغلاف')
                             ->options([
                                 'image' => 'صورة',
                                 'video' => 'فيديو',
                             ])
                             ->default('image')
+                            ->helperText('اختر الوسيط الذي تريد عرضه للعميل في أعلى الصفحة.')
                             ->required()
                             ->live(),
                         SpatieMediaLibraryFileUpload::make('hero_image')
-                            ->label('الصورة الرئيسية')
+                            ->label('صورة الغلاف الرئيسية')
                             ->collection('hero_image')
                             ->conversion('hero')
                             ->image()
@@ -50,17 +52,17 @@ class HomepageSettingForm
                             ->visible(fn (Get $get): bool => $get('hero_media_type') === 'image')
                             ->maxSize(config('catalog.media.max_image_size_kb'))
                             ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
-                            ->helperText('يمكنك قص الصورة أو تدويرها وتكبيرها بعد الرفع.')
+                            ->helperText('استخدم صورة أفقية واضحة. يمكنك قصها أو تدويرها وتكبيرها بعد الرفع، ونسبة 3:1 مناسبة غالباً.')
                             ->columnSpanFull(),
                         SpatieMediaLibraryFileUpload::make('hero_video')
-                            ->label('الفيديو الرئيسي')
+                            ->label('فيديو الغلاف الرئيسي')
                             ->collection('hero_video')
                             ->previewable(false)
                             ->required(fn (Get $get): bool => (bool) $get('hero_enabled') && $get('hero_media_type') === 'video')
                             ->visible(fn (Get $get): bool => $get('hero_media_type') === 'video')
                             ->maxSize(config('catalog.media.max_video_size_kb'))
                             ->acceptedFileTypes(config('catalog.media.allowed_video_mimes'))
-                            ->helperText('الصيغة المدعومة حاليًا MP4، والحجم الأقصى 50MB افتراضيًا.')
+                            ->helperText('الصيغة المدعومة حالياً إم بي 4 (MP4)، والحجم الأقصى الافتراضي 50 ميغابايت.')
                             ->columnSpanFull(),
                         SpatieMediaLibraryFileUpload::make('hero_poster')
                             ->label('صورة غلاف الفيديو')
@@ -76,14 +78,16 @@ class HomepageSettingForm
                             ->visible(fn (Get $get): bool => $get('hero_media_type') === 'video')
                             ->maxSize(config('catalog.media.max_image_size_kb'))
                             ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
-                            ->helperText('اختيارية وتظهر قبل تشغيل الفيديو، ويمكن قصها أو تدويرها بعد الرفع.')
+                            ->helperText('اختيارية، وتظهر للعميل قبل تشغيل الفيديو. يمكنك قصها أو تدويرها بعد الرفع.')
                             ->columnSpanFull(),
-                    ]),
-                Section::make('طرق الدفع')
-                    ->description('الخيارات المحددة فقط ستظهر في إعدادات إتمام الطلب ويقبلها الـ API.')
+                    ])
+                    ->columns(2)
+                    ->columnSpanFull(),
+                Section::make('طرق الدفع المتاحة')
+                    ->description('الخيارات المحددة فقط ستظهر للعميل عند إتمام الطلب وسيقبلها التطبيق.')
                     ->schema([
                         CheckboxList::make('payment_methods')
-                            ->label('طرق الدفع المفعّلة')
+                            ->label('اختر طرق الدفع')
                             ->options(
                                 collect(HomepageSetting::configuredPaymentMethods())
                                     ->mapWithKeys(fn (array $method, string $key): array => [$key => $method['label']])
@@ -92,8 +96,10 @@ class HomepageSettingForm
                             ->default(array_keys(HomepageSetting::configuredPaymentMethods()))
                             ->columns(3)
                             ->bulkToggleable()
+                            ->helperText('يجب إبقاء طريقة دفع واحدة على الأقل مفعّلة حتى يستطيع العميل إتمام الطلب.')
                             ->required(),
-                    ]),
+                    ])
+                    ->columnSpanFull(),
             ]);
     }
 }

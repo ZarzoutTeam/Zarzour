@@ -15,6 +15,7 @@ class CustomerInfolist
         return $schema
             ->components([
                 Section::make('بيانات العميل')
+                    ->description('معلومات الحساب والتواصل المسجلة لهذا العميل.')
                     ->schema([
                         Grid::make(2)->schema([
                             TextEntry::make('name')->label('الاسم'),
@@ -33,6 +34,7 @@ class CustomerInfolist
                         ]),
                     ]),
                 Section::make('ملخص النشاط')
+                    ->description('ملخص الطلبات والمبالغ المرتبطة بالعميل.')
                     ->schema([
                         Grid::make(3)->schema([
                             TextEntry::make('orders_count')

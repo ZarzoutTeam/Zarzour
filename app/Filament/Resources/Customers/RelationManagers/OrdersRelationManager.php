@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Customers\RelationManagers;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
+use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
@@ -34,7 +35,8 @@ class OrdersRelationManager extends RelationManager
                     ->color(fn (string $state): string => OrderStatus::from($state)->getColor()),
                 TextColumn::make('total')
                     ->label('الإجمالي الكلي')
-                    ->numeric(2),
+                    ->numeric(2)
+                    ->suffix(fn (Order $record): string => $record->currency === 'USD' ? ' دولار' : ' ل.س'),
             ])
             ->recordActions([
                 Action::make('view')

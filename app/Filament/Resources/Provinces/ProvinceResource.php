@@ -26,6 +26,10 @@ class ProvinceResource extends Resource
 
     protected static ?string $navigationLabel = 'المحافظات';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'إعدادات الشحن';
+
+    protected static ?int $navigationSort = 10;
+
     public static function form(Schema $schema): Schema
     {
         return ProvinceForm::configure($schema);

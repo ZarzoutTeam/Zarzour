@@ -6,6 +6,7 @@ use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Widgets\SalesOverviewWidget;
 use App\Filament\Widgets\TopSellingProductsWidget;
+use App\Http\Middleware\ForceAdminLocale;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
@@ -44,6 +45,14 @@ class AdminPanelProvider extends PanelProvider
             )
             ->darkMode(false)
             ->sidebarCollapsibleOnDesktop()
+            ->navigationGroups([
+                'المبيعات والعملاء',
+                'المنتجات والكتالوج',
+                'التسويق والعروض',
+                'محتوى التطبيق',
+                'إعدادات الشحن',
+                'إدارة الوصول',
+            ])
             ->colors([
                 'primary' => Color::hex('#7dc142'),
                 'success' => Color::Emerald,
@@ -74,6 +83,7 @@ class AdminPanelProvider extends PanelProvider
                 TopSellingProductsWidget::class,
             ])
             ->middleware([
+                ForceAdminLocale::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
@@ -83,6 +93,9 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+            ])
+            ->persistentMiddleware([
+                ForceAdminLocale::class,
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),

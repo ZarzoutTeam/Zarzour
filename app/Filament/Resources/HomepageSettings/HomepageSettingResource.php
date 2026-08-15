@@ -21,11 +21,15 @@ class HomepageSettingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedComputerDesktop;
 
-    protected static ?string $modelLabel = 'إعداد الواجهة الرئيسية';
+    protected static ?string $modelLabel = 'إعداد الصفحة الرئيسية';
 
-    protected static ?string $pluralModelLabel = 'إعدادات الواجهة الرئيسية';
+    protected static ?string $pluralModelLabel = 'إعدادات الصفحة الرئيسية';
 
-    protected static ?string $navigationLabel = 'إعدادات الواجهة';
+    protected static ?string $navigationLabel = 'الصفحة الرئيسية';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'محتوى التطبيق';
+
+    protected static ?int $navigationSort = 10;
 
     public static function form(Schema $schema): Schema
     {

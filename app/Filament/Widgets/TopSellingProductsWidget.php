@@ -23,6 +23,7 @@ class TopSellingProductsWidget extends TableWidget
     {
         return $table
             ->query($this->getTopSellingQuery())
+            ->description('مرتبة حسب إجمالي الكمية المباعة ضمن الفترة المحددة، من دون احتساب الهدايا.')
             ->columns([
                 TextColumn::make('product.name')->label('المنتج'),
                 TextColumn::make('total_quantity')->label('الكمية المباعة'),

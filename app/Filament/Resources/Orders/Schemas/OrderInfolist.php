@@ -23,6 +23,7 @@ class OrderInfolist
         return $schema
             ->components([
                 Section::make('بيانات العميل')
+                    ->description('معلومات التواصل والتوصيل المسجلة مع الطلب.')
                     ->schema([
                         Grid::make(2)->schema([
                             TextEntry::make('customer_name')->label('اسم العميل'),
@@ -34,6 +35,7 @@ class OrderInfolist
                         TextEntry::make('extra_notes')->label('ملاحظات إضافية')->placeholder('—')->columnSpanFull(),
                     ]),
                 Section::make('حالة الطلب')
+                    ->description('تفاصيل الحالة الحالية وطريقة الدفع وتاريخ إنشاء الطلب.')
                     ->schema([
                         Grid::make(3)->schema([
                             TextEntry::make('status')
@@ -51,6 +53,7 @@ class OrderInfolist
                         ]),
                     ]),
                 Section::make('عناصر الطلب')
+                    ->description('المنتجات والكميات والأسعار التي ثُبتت لحظة إنشاء الطلب.')
                     ->schema([
                         RepeatableEntry::make('items')
                             ->label('')
@@ -65,6 +68,7 @@ class OrderInfolist
                             ]),
                     ]),
                 Section::make('ملخص الفاتورة')
+                    ->description('تفصيل المبلغ النهائي بعد الخصومات ورسوم الشحن.')
                     ->schema([
                         Grid::make(3)->schema([
                             TextEntry::make('subtotal')->label('المجموع الفرعي')->numeric(2)->suffix(' ل.س'),
@@ -72,7 +76,15 @@ class OrderInfolist
                             TextEntry::make('shipping_fee')->label('رسوم الشحن')->numeric(2)->suffix(' ل.س'),
                             TextEntry::make('total')->label('الإجمالي الكلي')->numeric(2)->suffix(' ل.س'),
                             TextEntry::make('coupon.code')->label('كود الخصم المستخدم')->placeholder('—'),
-                            TextEntry::make('appliedOffer.type')->label('العرض المطبّق')->placeholder('—'),
+                            TextEntry::make('appliedOffer.type')
+                                ->label('العرض المطبّق')
+                                ->formatStateUsing(fn (?string $state): string => match ($state) {
+                                    'discount_only' => 'خصم فقط',
+                                    'discount_with_gift' => 'خصم مع هدية',
+                                    'gift_only' => 'هدية فقط',
+                                    default => '—',
+                                })
+                                ->placeholder('—'),
                         ]),
                     ]),
             ]);

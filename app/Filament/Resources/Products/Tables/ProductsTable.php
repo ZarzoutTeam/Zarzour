@@ -42,7 +42,7 @@ class ProductsTable
                     ->numeric(2)
                     ->sortable(),
                 TextColumn::make('price_usd')
-                    ->label('السعر USD')
+                    ->label('السعر بالدولار')
                     ->numeric(2)
                     ->placeholder('—')
                     ->sortable(),

@@ -20,11 +20,11 @@ class HomepageSettingsTable
                     ->collection('hero_image')
                     ->conversion('thumbnail'),
                 TextColumn::make('hero_media_type')
-                    ->label('نوع الوسائط')
+                    ->label('نوع الغلاف')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => $state === 'video' ? 'فيديو' : 'صورة'),
                 IconColumn::make('hero_enabled')
-                    ->label('ظاهرة')
+                    ->label('الغلاف ظاهر')
                     ->boolean(),
                 TextColumn::make('payment_methods')
                     ->label('طرق الدفع')

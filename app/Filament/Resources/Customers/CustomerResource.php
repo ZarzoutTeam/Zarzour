@@ -26,6 +26,10 @@ class CustomerResource extends Resource
 
     protected static ?string $navigationLabel = 'العملاء';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'المبيعات والعملاء';
+
+    protected static ?int $navigationSort = 20;
+
     public static function infolist(Schema $schema): Schema
     {
         return CustomerInfolist::configure($schema);

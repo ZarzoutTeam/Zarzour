@@ -26,6 +26,10 @@ class CouponResource extends Resource
 
     protected static ?string $navigationLabel = 'الكوبونات';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'التسويق والعروض';
+
+    protected static ?int $navigationSort = 30;
+
     public static function form(Schema $schema): Schema
     {
         return CouponForm::configure($schema);

@@ -27,6 +27,10 @@ class ProductResource extends Resource
 
     protected static ?string $navigationLabel = 'المنتجات';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'المنتجات والكتالوج';
+
+    protected static ?int $navigationSort = 10;
+
     public static function form(Schema $schema): Schema
     {
         return ProductForm::configure($schema);

@@ -33,7 +33,7 @@ class BannersTable
                     ->badge()
                     ->searchable(),
                 TextColumn::make('priority')
-                    ->label('الأولوية')
+                    ->label('ترتيب الظهور')
                     ->numeric()
                     ->sortable(),
                 IconColumn::make('is_active')

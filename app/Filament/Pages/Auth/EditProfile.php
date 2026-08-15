@@ -18,9 +18,11 @@ class EditProfile extends BaseEditProfile
         return $schema
             ->components([
                 $this->getNameFormComponent()
-                    ->label('الاسم الكامل'),
+                    ->label('الاسم الكامل')
+                    ->helperText('يظهر هذا الاسم في قائمة الحساب أعلى لوحة التحكم.'),
                 $this->getEmailFormComponent()
-                    ->label('البريد الإلكتروني'),
+                    ->label('البريد الإلكتروني')
+                    ->helperText('يُستخدم لتسجيل الدخول إلى لوحة التحكم.'),
                 TextInput::make('phone_number')
                     ->label('رقم الهاتف')
                     ->tel()
@@ -33,9 +35,11 @@ class EditProfile extends BaseEditProfile
                     ->label('كلمة المرور الجديدة')
                     ->helperText('اتركها فارغة إذا لم ترد تغيير كلمة المرور.'),
                 $this->getPasswordConfirmationFormComponent()
-                    ->label('تأكيد كلمة المرور الجديدة'),
+                    ->label('تأكيد كلمة المرور الجديدة')
+                    ->helperText('أعد كتابة كلمة المرور الجديدة للتأكد من صحتها.'),
                 $this->getCurrentPasswordFormComponent()
-                    ->label('كلمة المرور الحالية'),
+                    ->label('كلمة المرور الحالية')
+                    ->helperText('مطلوبة فقط عند تغيير كلمة المرور.'),
             ]);
     }
 }

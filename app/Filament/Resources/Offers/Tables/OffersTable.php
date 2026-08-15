@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Offers\Tables;
 
+use App\Models\Offer;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -40,6 +41,7 @@ class OffersTable
                 TextColumn::make('discount_value')
                     ->label('قيمة الخصم')
                     ->numeric(2)
+                    ->suffix(fn (Offer $record): string => $record->discount_type === 'percentage' ? '%' : ' ل.س')
                     ->placeholder('—'),
                 TextColumn::make('gifts.giftProduct.name')
                     ->label('منتج الهدية')

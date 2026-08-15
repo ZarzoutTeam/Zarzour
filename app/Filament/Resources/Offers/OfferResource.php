@@ -27,6 +27,10 @@ class OfferResource extends Resource
 
     protected static ?string $navigationLabel = 'العروض';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'التسويق والعروض';
+
+    protected static ?int $navigationSort = 10;
+
     public static function form(Schema $schema): Schema
     {
         return OfferForm::configure($schema);

@@ -21,11 +21,15 @@ class BannerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 
-    protected static ?string $modelLabel = 'بانر';
+    protected static ?string $modelLabel = 'لافتة إعلانية';
 
-    protected static ?string $pluralModelLabel = 'البانرات';
+    protected static ?string $pluralModelLabel = 'اللافتات الإعلانية';
 
-    protected static ?string $navigationLabel = 'البانرات';
+    protected static ?string $navigationLabel = 'اللافتات الإعلانية';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'محتوى التطبيق';
+
+    protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
     {

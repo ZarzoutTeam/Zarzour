@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Coupons\Tables;
 
+use App\Models\Coupon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -19,21 +20,25 @@ class CouponsTable
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('code')
-                    ->label('الكود')
+                    ->label('رمز القسيمة')
                     ->searchable()
                     ->badge(),
                 TextColumn::make('scope')
-                    ->label('النطاق'),
+                    ->label('النطاق')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => $state === 'user' ? 'عميل محدد' : 'جميع العملاء'),
                 TextColumn::make('phone_number')
-                    ->label('العميل')
+                    ->label('رقم العميل')
                     ->placeholder('—'),
                 TextColumn::make('type')
-                    ->label('النوع'),
+                    ->label('طريقة الخصم')
+                    ->formatStateUsing(fn (string $state): string => $state === 'percentage' ? 'نسبة مئوية' : 'مبلغ ثابت'),
                 TextColumn::make('value')
-                    ->label('القيمة')
-                    ->numeric(2),
+                    ->label('قيمة الخصم')
+                    ->numeric(2)
+                    ->suffix(fn (Coupon $record): string => $record->type === 'percentage' ? '%' : ' ل.س'),
                 TextColumn::make('used_count')
-                    ->label('الاستخدام')
+                    ->label('مرات الاستخدام')
                     ->formatStateUsing(fn ($record) => $record->used_count.' / '.($record->usage_limit ?? '∞')),
                 TextColumn::make('expires_at')
                     ->label('الانتهاء')

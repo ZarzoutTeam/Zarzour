@@ -29,11 +29,13 @@ class SalesOverviewWidget extends StatsOverviewWidget
 
         $stats = [
             Stat::make('إجمالي المبيعات', number_format((float) $totalSales, 2).' ل.س')
+                ->description('مجموع الطلبات المحتسبة كمبيعات ضمن الفترة المحددة')
                 ->color('success'),
         ];
 
         foreach (OrderStatus::labels() as $status => $label) {
-            $stats[] = Stat::make($label, (int) ($statusCounts[$status] ?? 0));
+            $stats[] = Stat::make($label, (int) ($statusCounts[$status] ?? 0))
+                ->description("عدد الطلبات بحالة {$label}");
         }
 
         return $stats;
