@@ -20,9 +20,9 @@ return [
 
         'conversions' => [
             'thumbnail' => ['dimension' => 400, 'quality' => 75],
-            'medium' => ['dimension' => 1200, 'quality' => 82],
-            'large' => ['dimension' => 1920, 'quality' => 85],
-            'hero' => ['dimension' => 2560, 'quality' => 85],
+            'medium' => ['dimension' => 1600, 'quality' => 90],
+            'large' => ['dimension' => 2560, 'quality' => 92],
+            'hero' => ['dimension' => 2560, 'quality' => 92],
         ],
     ],
 

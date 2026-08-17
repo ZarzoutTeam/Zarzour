@@ -84,7 +84,7 @@ class ClientDashboardChangesTest extends TestCase
 
         $product = Product::factory()->create();
         $media = $product
-            ->addMedia(UploadedFile::fake()->image('product.jpg', 2400, 1600))
+            ->addMedia(UploadedFile::fake()->image('product.jpg', 3000, 2000))
             ->toMediaCollection('images');
 
         $this->assertTrue($media->hasGeneratedConversion('thumbnail'));
@@ -97,8 +97,8 @@ class ClientDashboardChangesTest extends TestCase
         $this->assertTrue($conversions->getByName('large')->shouldBeQueued());
 
         $this->assertSame([400, 267], array_slice(getimagesize($media->getPath('thumbnail')), 0, 2));
-        $this->assertSame([1200, 800], array_slice(getimagesize($media->getPath('medium')), 0, 2));
-        $this->assertSame([1920, 1280], array_slice(getimagesize($media->getPath('large')), 0, 2));
+        $this->assertSame([1600, 1067], array_slice(getimagesize($media->getPath('medium')), 0, 2));
+        $this->assertSame([2560, 1707], array_slice(getimagesize($media->getPath('large')), 0, 2));
 
         $response = $this->getJson('/api/v1/products/'.$product->slug);
 
