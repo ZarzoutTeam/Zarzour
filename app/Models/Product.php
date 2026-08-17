@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -73,15 +74,36 @@ class Product extends Model implements HasMedia
     {
         $this->addMediaConversion('thumbnail')
             ->performOnCollections('images')
-            ->nonQueued()
-            ->width(300)
-            ->format('webp');
+            ->fit(
+                Fit::Max,
+                (int) config('catalog.media.conversions.thumbnail.dimension'),
+                (int) config('catalog.media.conversions.thumbnail.dimension'),
+            )
+            ->quality((int) config('catalog.media.conversions.thumbnail.quality'))
+            ->format('webp')
+            ->queued();
 
         $this->addMediaConversion('medium')
             ->performOnCollections('images')
-            ->nonQueued()
-            ->width(800)
-            ->format('webp');
+            ->fit(
+                Fit::Max,
+                (int) config('catalog.media.conversions.medium.dimension'),
+                (int) config('catalog.media.conversions.medium.dimension'),
+            )
+            ->quality((int) config('catalog.media.conversions.medium.quality'))
+            ->format('webp')
+            ->queued();
+
+        $this->addMediaConversion('large')
+            ->performOnCollections('images')
+            ->fit(
+                Fit::Max,
+                (int) config('catalog.media.conversions.large.dimension'),
+                (int) config('catalog.media.conversions.large.dimension'),
+            )
+            ->quality((int) config('catalog.media.conversions.large.quality'))
+            ->format('webp')
+            ->queued();
     }
 
     /**

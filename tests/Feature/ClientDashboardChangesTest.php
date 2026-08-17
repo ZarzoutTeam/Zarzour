@@ -14,12 +14,28 @@ use App\Support\CatalogCache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\Conversions\ConversionCollection;
 use Tests\TestCase;
 
 class ClientDashboardChangesTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_livewire_and_media_library_allow_the_configured_field_upload_limits(): void
+    {
+        $temporaryUploadMaxSize = max(
+            (int) config('catalog.media.max_image_size_kb'),
+            (int) config('catalog.media.max_video_size_kb'),
+        );
+
+        $this->assertContains(
+            'max:'.$temporaryUploadMaxSize,
+            config('livewire.temporary_file_upload.rules'),
+        );
+        $this->assertSame($temporaryUploadMaxSize * 1024, config('media-library.max_file_size'));
+    }
 
     public function test_product_api_exposes_syp_and_usd_prices_while_preserving_legacy_price(): void
     {
@@ -53,10 +69,71 @@ class ClientDashboardChangesTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('data.media.0.collection', 'video')
+            ->assertJsonPath('data.media.0.original_url', null)
             ->assertJsonPath('data.media.0.thumbnail_url', null)
-            ->assertJsonPath('data.media.0.medium_url', null);
+            ->assertJsonPath('data.media.0.medium_url', null)
+            ->assertJsonPath('data.media.0.large_url', null);
 
         $this->assertStringEndsWith('.mp4', $response->json('data.media.0.url'));
+    }
+
+    public function test_product_api_prefers_high_quality_webp_and_preserves_original_image_url(): void
+    {
+        Storage::fake('public');
+        config()->set('media-library.queue_conversions_after_database_commit', false);
+
+        $product = Product::factory()->create();
+        $media = $product
+            ->addMedia(UploadedFile::fake()->image('product.jpg', 2400, 1600))
+            ->toMediaCollection('images');
+
+        $this->assertTrue($media->hasGeneratedConversion('thumbnail'));
+        $this->assertTrue($media->hasGeneratedConversion('medium'));
+        $this->assertTrue($media->hasGeneratedConversion('large'));
+
+        $conversions = ConversionCollection::createForMedia($media);
+        $this->assertTrue($conversions->getByName('thumbnail')->shouldBeQueued());
+        $this->assertTrue($conversions->getByName('medium')->shouldBeQueued());
+        $this->assertTrue($conversions->getByName('large')->shouldBeQueued());
+
+        $this->assertSame([400, 267], array_slice(getimagesize($media->getPath('thumbnail')), 0, 2));
+        $this->assertSame([1200, 800], array_slice(getimagesize($media->getPath('medium')), 0, 2));
+        $this->assertSame([1920, 1280], array_slice(getimagesize($media->getPath('large')), 0, 2));
+
+        $response = $this->getJson('/api/v1/products/'.$product->slug);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.media.0.collection', 'images');
+
+        $this->assertStringEndsWith('.jpg', $response->json('data.media.0.original_url'));
+        $this->assertStringEndsWith('-thumbnail.webp', $response->json('data.media.0.thumbnail_url'));
+        $this->assertStringEndsWith('-medium.webp', $response->json('data.media.0.medium_url'));
+        $this->assertStringEndsWith('-large.webp', $response->json('data.media.0.large_url'));
+        $this->assertSame($response->json('data.media.0.large_url'), $response->json('data.media.0.url'));
+    }
+
+    public function test_product_image_remains_visible_while_queued_conversions_are_pending(): void
+    {
+        Storage::fake('public');
+        Queue::fake();
+        config()->set('media-library.queue_conversions_after_database_commit', false);
+
+        $product = Product::factory()->create();
+        $media = $product
+            ->addMedia(UploadedFile::fake()->image('pending.jpg', 1600, 1000))
+            ->toMediaCollection('images');
+
+        $this->assertFalse($media->hasGeneratedConversion('large'));
+
+        $response = $this->getJson('/api/v1/products/'.$product->slug)->assertOk();
+        $originalUrl = $response->json('data.media.0.original_url');
+
+        $this->assertStringEndsWith('.jpg', $originalUrl);
+        $this->assertSame($originalUrl, $response->json('data.media.0.url'));
+        $this->assertSame($originalUrl, $response->json('data.media.0.thumbnail_url'));
+        $this->assertSame($originalUrl, $response->json('data.media.0.medium_url'));
+        $this->assertSame($originalUrl, $response->json('data.media.0.large_url'));
     }
 
     public function test_product_price_filter_can_target_usd(): void

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\HomepageSettings\Schemas;
 
 use App\Models\HomepageSetting;
+use App\Support\CatalogImageUpload;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -35,11 +36,10 @@ class HomepageSettingForm
                             ->helperText('اختر الوسيط الذي تريد عرضه للعميل في أعلى الصفحة.')
                             ->required()
                             ->live(),
-                        SpatieMediaLibraryFileUpload::make('hero_image')
+                        CatalogImageUpload::configure(SpatieMediaLibraryFileUpload::make('hero_image')
                             ->label('صورة الغلاف الرئيسية')
                             ->collection('hero_image')
-                            ->conversion('hero')
-                            ->image()
+                            ->conversion('hero'))
                             ->imageEditor()
                             ->imageEditorAspectRatioOptions([
                                 null,
@@ -50,9 +50,7 @@ class HomepageSettingForm
                             ])
                             ->required(fn (Get $get): bool => (bool) $get('hero_enabled') && $get('hero_media_type') === 'image')
                             ->visible(fn (Get $get): bool => $get('hero_media_type') === 'image')
-                            ->maxSize(config('catalog.media.max_image_size_kb'))
-                            ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
-                            ->helperText('استخدم صورة أفقية واضحة. يمكنك قصها أو تدويرها وتكبيرها بعد الرفع، ونسبة 3:1 مناسبة غالباً.')
+                            ->helperText(CatalogImageUpload::limitsDescription().' استخدم صورة أفقية واضحة؛ نسبة 3:1 مناسبة غالباً.')
                             ->columnSpanFull(),
                         SpatieMediaLibraryFileUpload::make('hero_video')
                             ->label('فيديو الغلاف الرئيسي')
@@ -66,11 +64,10 @@ class HomepageSettingForm
                             ->acceptedFileTypes(config('catalog.media.allowed_video_mimes'))
                             ->helperText('الصيغة المدعومة حالياً إم بي 4 (MP4)، والحجم الأقصى الافتراضي 50 ميغابايت.')
                             ->columnSpanFull(),
-                        SpatieMediaLibraryFileUpload::make('hero_poster')
+                        CatalogImageUpload::configure(SpatieMediaLibraryFileUpload::make('hero_poster')
                             ->label('صورة غلاف الفيديو')
                             ->collection('hero_poster')
-                            ->conversion('hero')
-                            ->image()
+                            ->conversion('hero'))
                             ->imageEditor()
                             ->imageEditorAspectRatioOptions([
                                 null,
@@ -78,9 +75,7 @@ class HomepageSettingForm
                                 '21:9',
                             ])
                             ->visible(fn (Get $get): bool => $get('hero_media_type') === 'video')
-                            ->maxSize(config('catalog.media.max_image_size_kb'))
-                            ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
-                            ->helperText('اختيارية، وتظهر للعميل قبل تشغيل الفيديو. يمكنك قصها أو تدويرها بعد الرفع.')
+                            ->helperText('اختيارية، وتظهر قبل تشغيل الفيديو. '.CatalogImageUpload::limitsDescription())
                             ->columnSpanFull(),
                     ])
                     ->columns(2)

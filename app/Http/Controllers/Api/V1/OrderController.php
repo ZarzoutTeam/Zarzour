@@ -35,20 +35,26 @@ class OrderController extends Controller
     {
         $data = $request->validated();
 
-        $pricing = $this->priceCalculationService->calculate(
-            $data['lines'],
-            $data['coupon_code'] ?? null,
-            $data['phone_number'],
-            $data['province_id'],
-        );
-
-        $productNames = Product::query()->whereIn('id', array_column($pricing['lines'], 'product_id'))->pluck('name', 'id');
-
         $authenticatedUser = $request->user('sanctum');
         $userId = $authenticatedUser instanceof User && $authenticatedUser->isCustomer() ? $authenticatedUser->id : null;
 
-        $order = DB::transaction(function () use ($data, $pricing, $productNames, $userId) {
-            $primaryGiftOfferId = collect($pricing['lines'])->first(fn (array $line) => $line['gift'] !== null)['gift']['offer_id'] ?? null;
+        ['order' => $order, 'pricing' => $pricing] = DB::transaction(function () use ($data, $userId): array {
+            // Product and coupon rows are locked by the pricing service. This keeps
+            // stock reservations and coupon limits correct under concurrent orders.
+            $pricing = $this->priceCalculationService->calculate(
+                $data['lines'],
+                $data['coupon_code'] ?? null,
+                $data['phone_number'],
+                $data['province_id'],
+                lockForUpdate: true,
+            );
+
+            $productNames = Product::query()
+                ->whereIn('id', array_column($pricing['lines'], 'product_id'))
+                ->pluck('name', 'id');
+
+            $primaryOfferId = collect($pricing['lines'])
+                ->first(fn (array $line): bool => $line['offer_id'] !== null)['offer_id'] ?? null;
 
             $order = Order::create([
                 'user_id' => $userId,
@@ -59,10 +65,11 @@ class OrderController extends Controller
                 'extra_notes' => $data['extra_notes'] ?? null,
                 'subtotal' => $pricing['subtotal'],
                 'discount_amount' => $pricing['discount_amount'],
+                'coupon_discount_amount' => $pricing['coupon']['discount_amount'] ?? 0,
                 'shipping_fee' => $pricing['shipping_fee'],
                 'total' => $pricing['grand_total'],
                 'coupon_id' => $pricing['coupon']['id'] ?? null,
-                'applied_offer_id' => $primaryGiftOfferId,
+                'applied_offer_id' => $primaryOfferId,
                 'payment_method' => $data['payment_method'],
                 'currency' => 'SYP',
                 'status' => 'pending',
@@ -75,8 +82,11 @@ class OrderController extends Controller
                     'unit_price_snapshot' => $line['unit_price'],
                     'quantity' => $line['quantity'],
                     'line_total' => $line['final_line_total'],
+                    'direct_discount_amount' => $line['direct_discount_amount'],
+                    'coupon_discount_amount' => $line['coupon_discount_amount'],
+                    'offer_discount_amount' => $line['offer_discount_amount'],
                     'is_gift' => false,
-                    'offer_id' => null,
+                    'offer_id' => $line['offer_id'],
                 ]);
 
                 if ($line['gift'] !== null) {
@@ -86,6 +96,9 @@ class OrderController extends Controller
                         'unit_price_snapshot' => 0,
                         'quantity' => 1,
                         'line_total' => 0,
+                        'direct_discount_amount' => 0,
+                        'coupon_discount_amount' => 0,
+                        'offer_discount_amount' => 0,
                         'is_gift' => true,
                         'offer_id' => $line['gift']['offer_id'],
                     ]);
@@ -94,10 +107,29 @@ class OrderController extends Controller
 
             if ($pricing['coupon'] !== null) {
                 Coupon::whereKey($pricing['coupon']['id'])->increment('used_count');
+                $pricing['coupon']['used_count']++;
+
+                if ($pricing['coupon']['usage_limit'] !== null) {
+                    $pricing['coupon']['remaining_uses'] = max(
+                        0,
+                        $pricing['coupon']['usage_limit'] - $pricing['coupon']['used_count'],
+                    );
+                }
+
+                if ($pricing['coupon']['customer_usage_count'] !== null) {
+                    $pricing['coupon']['customer_usage_count']++;
+
+                    if ($pricing['coupon']['per_customer_usage_limit'] !== null) {
+                        $pricing['coupon']['customer_remaining_uses'] = max(
+                            0,
+                            $pricing['coupon']['per_customer_usage_limit'] - $pricing['coupon']['customer_usage_count'],
+                        );
+                    }
+                }
             }
 
-            return $order;
-        });
+            return ['order' => $order, 'pricing' => $pricing];
+        }, 3);
 
         return $this->success([
             'order_id' => $order->id,
@@ -105,6 +137,7 @@ class OrderController extends Controller
             'currency' => $order->currency,
             'subtotal' => (float) $order->subtotal,
             'discount_amount' => (float) $order->discount_amount,
+            'coupon_discount_amount' => (float) $order->coupon_discount_amount,
             'shipping_fee' => (float) $order->shipping_fee,
             'total' => (float) $order->total,
             'coupon' => $pricing['coupon'],
@@ -114,6 +147,10 @@ class OrderController extends Controller
                 'quantity' => $item->quantity,
                 'unit_price' => (float) $item->unit_price_snapshot,
                 'line_total' => (float) $item->line_total,
+                'direct_discount_amount' => (float) $item->direct_discount_amount,
+                'coupon_discount_amount' => (float) $item->coupon_discount_amount,
+                'offer_discount_amount' => (float) $item->offer_discount_amount,
+                'offer_id' => $item->offer_id,
                 'is_gift' => $item->is_gift,
             ]),
         ], 'تم إنشاء الطلب بنجاح', 201);

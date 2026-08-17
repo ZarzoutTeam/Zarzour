@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Banners\Schemas;
 
+use App\Support\CatalogImageUpload;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -71,11 +72,10 @@ class BannerForm
                 Section::make('صورة اللافتة')
                     ->description('استخدم صورة أفقية واضحة، وتجنب وضع نصوص مهمة قرب الحواف.')
                     ->schema([
-                        SpatieMediaLibraryFileUpload::make('image')
+                        CatalogImageUpload::configure(SpatieMediaLibraryFileUpload::make('image')
                             ->label('الصورة الإعلانية')
                             ->collection('image')
-                            ->conversion('hero')
-                            ->image()
+                            ->conversion('hero'))
                             ->imageEditor()
                             ->imageEditorAspectRatioOptions([
                                 null,
@@ -85,9 +85,7 @@ class BannerForm
                                 '2:1',
                             ])
                             ->required()
-                            ->maxSize(config('catalog.media.max_image_size_kb'))
-                            ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
-                            ->helperText('بعد الرفع يمكنك قص الصورة أو تدويرها وتكبيرها. نسبة 3:1 مناسبة غالباً للافتة العريضة.')
+                            ->helperText(CatalogImageUpload::limitsDescription().' تُعرض نسخة WebP عالية الدقة، ونسبة 3:1 مناسبة غالباً.')
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),

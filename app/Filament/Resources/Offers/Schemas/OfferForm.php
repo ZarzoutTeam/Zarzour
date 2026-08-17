@@ -63,7 +63,7 @@ class OfferForm
                             ->required(fn (Get $get): bool => $get('type') !== 'gift_only')
                             ->visible(fn (Get $get): bool => $get('type') !== 'gift_only')
                             ->numeric()
-                            ->minValue(0)
+                            ->minValue(0.01)
                             ->maxValue(fn (Get $get): ?float => $get('discount_type') === 'percentage' ? 100.0 : null)
                             ->step(0.01),
                         Select::make('gift_product_id')

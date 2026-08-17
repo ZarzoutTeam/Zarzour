@@ -24,6 +24,7 @@ class OrderFactory extends Factory
             'extra_notes' => null,
             'subtotal' => $subtotal,
             'discount_amount' => 0,
+            'coupon_discount_amount' => 0,
             'shipping_fee' => $shippingFee,
             'total' => $subtotal + $shippingFee,
             'coupon_id' => null,

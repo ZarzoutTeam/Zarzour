@@ -37,9 +37,18 @@ class CouponsTable
                     ->label('قيمة الخصم')
                     ->numeric(2)
                     ->suffix(fn (Coupon $record): string => $record->type === 'percentage' ? '%' : ' ل.س'),
+                TextColumn::make('max_discount_amount')
+                    ->label('سقف الخصم')
+                    ->numeric(2)
+                    ->suffix(' ل.س')
+                    ->placeholder('—')
+                    ->toggleable(),
                 TextColumn::make('used_count')
                     ->label('مرات الاستخدام')
                     ->formatStateUsing(fn ($record) => $record->used_count.' / '.($record->usage_limit ?? '∞')),
+                TextColumn::make('per_customer_usage_limit')
+                    ->label('الحد لكل عميل')
+                    ->formatStateUsing(fn (?int $state): string => $state !== null ? (string) $state : '∞'),
                 TextColumn::make('expires_at')
                     ->label('الانتهاء')
                     ->dateTime()

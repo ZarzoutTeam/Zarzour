@@ -90,8 +90,9 @@ class ProductController extends Controller
                 'media',
                 'discounts' => fn ($query) => $query->where('is_active', true)
                     ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
-                    ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now())),
-                'offers' => fn ($query) => $query->activeNow()->with('gifts.giftProduct'),
+                    ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
+                    ->orderByDesc('id'),
+                'offers' => fn ($query) => $query->activeNow()->orderByDesc('id')->with('gifts.giftProduct'),
             ])
             ->firstOrFail();
 

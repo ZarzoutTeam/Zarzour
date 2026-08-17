@@ -24,10 +24,15 @@ class ApiExceptionRenderer
             ],
             $e instanceof CouponException => [
                 $e->getMessage(),
-                null,
+                ['code' => $e->reason],
                 422,
             ],
             $e instanceof OverlappingOfferException => [
+                $e->getMessage(),
+                null,
+                422,
+            ],
+            $e instanceof OverlappingDiscountException => [
                 $e->getMessage(),
                 null,
                 422,

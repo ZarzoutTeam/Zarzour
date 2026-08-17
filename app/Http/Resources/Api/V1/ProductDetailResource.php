@@ -6,6 +6,7 @@ use App\Models\Offer;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /** @mixin Product */
 class ProductDetailResource extends JsonResource
@@ -36,13 +37,15 @@ class ProductDetailResource extends JsonResource
             'media' => $this->whenLoaded('media', fn () => $this->media->map(fn ($media) => [
                 'id' => $media->id,
                 'collection' => $media->collection_name,
-                'url' => $media->getFullUrl(),
-                'thumbnail_url' => $media->collection_name === 'images'
-                    ? ($media->hasGeneratedConversion('thumbnail') ? $media->getFullUrl('thumbnail') : $media->getFullUrl())
-                    : null,
-                'medium_url' => $media->collection_name === 'images'
-                    ? ($media->hasGeneratedConversion('medium') ? $media->getFullUrl('medium') : $media->getFullUrl())
-                    : null,
+                // Keep `url` backward compatible for clients while serving the
+                // optimized large image as soon as its queued conversion exists.
+                'url' => $media->collection_name === 'images'
+                    ? $this->mediaConversionUrl($media, 'large')
+                    : $media->getFullUrl(),
+                'original_url' => $media->collection_name === 'images' ? $media->getFullUrl() : null,
+                'thumbnail_url' => $media->collection_name === 'images' ? $this->mediaConversionUrl($media, 'thumbnail') : null,
+                'medium_url' => $media->collection_name === 'images' ? $this->mediaConversionUrl($media, 'medium') : null,
+                'large_url' => $media->collection_name === 'images' ? $this->mediaConversionUrl($media, 'large') : null,
             ])),
             'discounts' => $this->whenLoaded('discounts', fn () => $this->discounts->map(fn ($discount) => [
                 'id' => $discount->id,
@@ -55,6 +58,13 @@ class ProductDetailResource extends JsonResource
                 fn (Offer $offer): array => $this->offerPayload($offer)
             )),
         ];
+    }
+
+    private function mediaConversionUrl(Media $media, string $conversion): string
+    {
+        return $media->hasGeneratedConversion($conversion)
+            ? $media->getFullUrl($conversion)
+            : $media->getFullUrl();
     }
 
     /**
@@ -72,7 +82,7 @@ class ProductDetailResource extends JsonResource
             'gift' => $giftProduct ? [
                 'product_id' => $giftProduct->id,
                 'name' => $giftProduct->name,
-                'available' => $giftProduct->available_quantity > 0,
+                'available' => $giftProduct->is_active && $giftProduct->available_quantity > 0,
             ] : null,
         ];
     }

@@ -48,4 +48,23 @@ class Discount extends Model
             ->where(fn (Builder $q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
             ->where(fn (Builder $q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()));
     }
+
+    /**
+     * A product must not have two active direct discounts whose date ranges
+     * overlap, otherwise the selected discount would be ambiguous.
+     */
+    public static function overlapsExistingActive(
+        int $productId,
+        \DateTimeInterface|string|null $startsAt,
+        \DateTimeInterface|string|null $endsAt,
+        ?int $ignoreId = null,
+    ): bool {
+        return static::query()
+            ->where('product_id', $productId)
+            ->where('is_active', true)
+            ->when($ignoreId, fn (Builder $q) => $q->where('id', '!=', $ignoreId))
+            ->where(fn (Builder $q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', $endsAt ?? '9999-12-31'))
+            ->where(fn (Builder $q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', $startsAt ?? '0001-01-01'))
+            ->exists();
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\CouponException;
 use App\Models\Coupon;
 use App\Models\Offer;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Province;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -37,7 +38,18 @@ class PriceCalculationService
      *     shipping_required: bool,
      *     grand_total: float,
      *     is_final_total: bool,
-     *     coupon: array{id: int, code: string, discount_amount: float}|null,
+     *     coupon: array{
+     *         id: int,
+     *         code: string,
+     *         discount_amount: float,
+     *         max_discount_amount: float|null,
+     *         usage_limit: int|null,
+     *         used_count: int,
+     *         remaining_uses: int|null,
+     *         per_customer_usage_limit: int|null,
+     *         customer_usage_count: int|null,
+     *         customer_remaining_uses: int|null
+     *     }|null,
      *     lines: array<int, array{
      *         product_id: int,
      *         quantity: int,
@@ -53,18 +65,31 @@ class PriceCalculationService
      *     }>,
      * }
      */
-    public function calculate(array $lines, ?string $couponCode = null, ?string $phoneNumber = null, ?int $provinceId = null): array
+    public function calculate(
+        array $lines,
+        ?string $couponCode = null,
+        ?string $phoneNumber = null,
+        ?int $provinceId = null,
+        bool $lockForUpdate = false,
+    ): array
     {
         $productIds = array_column($lines, 'product_id');
 
-        $products = Product::query()
+        $productQuery = Product::query()
             ->whereIn('id', $productIds)
+            ->where('is_active', true)
             ->with([
-                'discounts' => fn ($query) => $query->activeNow(),
-                'offers' => fn ($query) => $query->activeNow(),
+                'discounts' => fn ($query) => $query->activeNow()->orderByDesc('id'),
+                'offers' => fn ($query) => $query->activeNow()->orderByDesc('id'),
                 'offers.gifts.giftProduct',
             ])
-            ->get()
+            ->orderBy('id');
+
+        if ($lockForUpdate) {
+            $productQuery->lockForUpdate();
+        }
+
+        $products = $productQuery->get()
             ->keyBy('id');
 
         $rows = [];
@@ -98,32 +123,37 @@ class PriceCalculationService
         $subtotalAfterDirect = $this->money(array_sum(array_column($rows, 'line_after_direct')));
 
         $coupon = null;
+        $customerUsageCount = null;
         $couponDiscountTotal = 0.0;
 
         if ($couponCode !== null) {
-            $coupon = $this->validateCoupon($couponCode, $phoneNumber, $subtotalAfterDirect);
+            [$coupon, $customerUsageCount] = $this->validateCoupon(
+                $couponCode,
+                $phoneNumber,
+                $subtotalAfterDirect,
+                $lockForUpdate,
+            );
+            $calculatedCouponDiscount = $coupon->type === 'percentage'
+                ? $subtotalAfterDirect * ((float) $coupon->value / 100)
+                : (float) $coupon->value;
+
+            if ($coupon->type === 'percentage' && $coupon->max_discount_amount !== null) {
+                $calculatedCouponDiscount = min($calculatedCouponDiscount, (float) $coupon->max_discount_amount);
+            }
+
             $couponDiscountTotal = $this->money(
-                $coupon->type === 'percentage'
-                    ? $subtotalAfterDirect * ((float) $coupon->value / 100)
-                    : min((float) $coupon->value, $subtotalAfterDirect)
+                min(max(0, $calculatedCouponDiscount), $subtotalAfterDirect)
             );
         }
 
-        $couponRemaining = $couponDiscountTotal;
-        $lineCount = count($rows);
+        $couponShares = $this->allocateMoneyProportionally(
+            $couponDiscountTotal,
+            array_column($rows, 'line_after_direct'),
+        );
         $result = [];
 
         foreach ($rows as $index => $row) {
-            $isLastLine = $index === $lineCount - 1;
-
-            if ($couponDiscountTotal > 0 && $subtotalAfterDirect > 0) {
-                $couponShare = $isLastLine
-                    ? $couponRemaining
-                    : $this->money($row['line_after_direct'] / $subtotalAfterDirect * $couponDiscountTotal);
-                $couponRemaining = $this->money($couponRemaining - $couponShare);
-            } else {
-                $couponShare = 0.0;
-            }
+            $couponShare = $couponShares[$index] ?? 0.0;
 
             $lineAfterCoupon = $this->money($row['line_after_direct'] - $couponShare);
 
@@ -142,7 +172,7 @@ class PriceCalculationService
                 }
 
                 if ($offer->hasGift()) {
-                    $gift = $this->resolveGift($offer);
+                    $gift = $this->resolveGift($offer, $lockForUpdate);
                 }
 
                 if ($offer->type === 'gift_only' && $gift === null) {
@@ -189,14 +219,43 @@ class PriceCalculationService
                 'id' => $coupon->id,
                 'code' => $coupon->code,
                 'discount_amount' => $couponDiscountTotal,
+                'max_discount_amount' => $coupon->max_discount_amount !== null
+                    ? (float) $coupon->max_discount_amount
+                    : null,
+                'usage_limit' => $coupon->usage_limit,
+                'used_count' => $coupon->used_count,
+                'remaining_uses' => $coupon->usage_limit !== null
+                    ? max(0, $coupon->usage_limit - $coupon->used_count)
+                    : null,
+                'per_customer_usage_limit' => $coupon->per_customer_usage_limit,
+                'customer_usage_count' => $customerUsageCount,
+                'customer_remaining_uses' => $coupon->per_customer_usage_limit !== null && $customerUsageCount !== null
+                    ? max(0, $coupon->per_customer_usage_limit - $customerUsageCount)
+                    : null,
             ] : null,
             'lines' => $result,
         ];
     }
 
-    private function validateCoupon(string $code, ?string $phoneNumber, float $subtotalAfterDirect): Coupon
+    /**
+     * @return array{0: Coupon, 1: int|null}
+     */
+    private function validateCoupon(
+        string $code,
+        ?string $phoneNumber,
+        float $subtotalAfterDirect,
+        bool $lockForUpdate,
+    ): array
     {
-        $coupon = Coupon::query()->where('code', $code)->where('is_active', true)->first();
+        $couponQuery = Coupon::query()
+            ->where('code', strtoupper(trim($code)))
+            ->where('is_active', true);
+
+        if ($lockForUpdate) {
+            $couponQuery->lockForUpdate();
+        }
+
+        $coupon = $couponQuery->first();
 
         if (! $coupon) {
             throw CouponException::notFound();
@@ -210,15 +269,47 @@ class PriceCalculationService
             throw CouponException::usageLimitReached();
         }
 
-        if ($coupon->phone_number !== null && $coupon->phone_number !== $phoneNumber) {
-            throw CouponException::phoneMismatch();
+        if ($coupon->scope === 'user') {
+            if ($phoneNumber === null) {
+                throw CouponException::phoneRequired();
+            }
+
+            if ($coupon->phone_number !== $phoneNumber) {
+                throw CouponException::phoneMismatch();
+            }
         }
 
         if ($coupon->min_order_amount !== null && $subtotalAfterDirect < (float) $coupon->min_order_amount) {
             throw CouponException::belowMinimumOrderAmount();
         }
 
-        return $coupon;
+        $tracksCustomerUsage = $coupon->per_customer_usage_limit !== null || $coupon->scope === 'user';
+        $customerUsageCount = null;
+
+        if ($tracksCustomerUsage && $phoneNumber !== null) {
+            $customerUsageQuery = Order::query()
+                ->where('coupon_id', $coupon->id)
+                ->where('phone_number', $phoneNumber);
+
+            // A locking read is required here, not just a regular COUNT. Under
+            // MySQL REPEATABLE READ it must see the order committed by the prior
+            // transaction after waiting for the coupon row lock.
+            $customerUsageCount = $lockForUpdate
+                ? $customerUsageQuery->lockForUpdate()->get(['id'])->count()
+                : $customerUsageQuery->count();
+        }
+
+        if ($coupon->per_customer_usage_limit !== null) {
+            if ($customerUsageCount === null) {
+                throw CouponException::phoneRequired();
+            }
+
+            if ($customerUsageCount >= $coupon->per_customer_usage_limit) {
+                throw CouponException::perCustomerUsageLimitReached();
+            }
+        }
+
+        return [$coupon, $customerUsageCount];
     }
 
     private function applyDiscount(?string $type, mixed $value, float $unitPrice, int $quantity, float $base): float
@@ -235,6 +326,57 @@ class PriceCalculationService
     }
 
     /**
+     * Allocate a cart-level discount in integer cents using the largest-remainder
+     * method. The returned shares always add up exactly to the requested amount,
+     * and no line can receive more discount than its own value.
+     *
+     * @param  array<int, float>  $bases
+     * @return array<int, float>
+     */
+    private function allocateMoneyProportionally(float $amount, array $bases): array
+    {
+        $amountInCents = (int) round($amount * 100);
+        $baseCents = array_map(fn (float $base): int => (int) round($base * 100), $bases);
+        $baseTotalInCents = array_sum($baseCents);
+
+        if ($amountInCents <= 0 || $baseTotalInCents <= 0) {
+            return array_fill(0, count($bases), 0.0);
+        }
+
+        $amountInCents = min($amountInCents, $baseTotalInCents);
+        $shares = [];
+        $remainders = [];
+
+        foreach ($baseCents as $index => $baseInCents) {
+            $exactShare = $amountInCents * $baseInCents / $baseTotalInCents;
+            $shares[$index] = min((int) floor($exactShare), $baseInCents);
+            $remainders[$index] = $exactShare - floor($exactShare);
+        }
+
+        $remainingCents = $amountInCents - array_sum($shares);
+        $indices = array_keys($shares);
+
+        usort($indices, function (int $left, int $right) use ($remainders): int {
+            $remainderComparison = $remainders[$right] <=> $remainders[$left];
+
+            return $remainderComparison !== 0 ? $remainderComparison : $left <=> $right;
+        });
+
+        foreach ($indices as $index) {
+            if ($remainingCents === 0) {
+                break;
+            }
+
+            if ($shares[$index] < $baseCents[$index]) {
+                $shares[$index]++;
+                $remainingCents--;
+            }
+        }
+
+        return array_map(fn (int $share): float => $share / 100, $shares);
+    }
+
+    /**
      * Rule 4: gift availability is always re-checked live at the moment of
      * calculation (preview or order creation) against current stock, never
      * from a stored/cached flag. If unavailable, a discount-with-gift offer keeps
@@ -242,7 +384,7 @@ class PriceCalculationService
      *
      * @return array{product_id: int, name: string, offer_id: int}|null
      */
-    private function resolveGift(Offer $offer): ?array
+    private function resolveGift(Offer $offer, bool $lockForUpdate): ?array
     {
         $offerGift = $offer->gifts->first();
 
@@ -250,7 +392,15 @@ class PriceCalculationService
             return null;
         }
 
-        $giftProduct = Product::query()->find($offerGift->gift_product_id);
+        $giftProductQuery = Product::query()
+            ->whereKey($offerGift->gift_product_id)
+            ->where('is_active', true);
+
+        if ($lockForUpdate) {
+            $giftProductQuery->lockForUpdate();
+        }
+
+        $giftProduct = $giftProductQuery->first();
 
         if ($giftProduct === null || $giftProduct->available_quantity < 1) {
             return null;

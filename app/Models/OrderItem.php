@@ -17,6 +17,9 @@ class OrderItem extends Model
         'unit_price_snapshot',
         'quantity',
         'line_total',
+        'direct_discount_amount',
+        'coupon_discount_amount',
+        'offer_discount_amount',
         'is_gift',
         'offer_id',
     ];
@@ -27,6 +30,9 @@ class OrderItem extends Model
             'unit_price_snapshot' => 'decimal:2',
             'quantity' => 'integer',
             'line_total' => 'decimal:2',
+            'direct_discount_amount' => 'decimal:2',
+            'coupon_discount_amount' => 'decimal:2',
+            'offer_discount_amount' => 'decimal:2',
             'is_gift' => 'boolean',
         ];
     }

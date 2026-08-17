@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -49,15 +50,25 @@ class HomepageSetting extends Model implements HasMedia
     {
         $this->addMediaConversion('thumbnail')
             ->performOnCollections('hero_image', 'hero_poster')
-            ->nonQueued()
-            ->width(300)
-            ->format('webp');
+            ->fit(
+                Fit::Max,
+                (int) config('catalog.media.conversions.thumbnail.dimension'),
+                (int) config('catalog.media.conversions.thumbnail.dimension'),
+            )
+            ->quality((int) config('catalog.media.conversions.thumbnail.quality'))
+            ->format('webp')
+            ->queued();
 
         $this->addMediaConversion('hero')
             ->performOnCollections('hero_image', 'hero_poster')
-            ->nonQueued()
-            ->width(1600)
-            ->format('webp');
+            ->fit(
+                Fit::Max,
+                (int) config('catalog.media.conversions.hero.dimension'),
+                (int) config('catalog.media.conversions.hero.dimension'),
+            )
+            ->quality((int) config('catalog.media.conversions.hero.quality'))
+            ->format('webp')
+            ->queued();
     }
 
     /**

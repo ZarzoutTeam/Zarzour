@@ -43,7 +43,7 @@ class DiscountForm
                             ->suffix(fn (Get $get): string => $get('type') === 'percentage' ? '%' : 'ل.س')
                             ->required()
                             ->numeric()
-                            ->minValue(0)
+                            ->minValue(0.01)
                             ->maxValue(fn (Get $get): ?float => $get('type') === 'percentage' ? 100.0 : null)
                             ->step(0.01),
                     ])

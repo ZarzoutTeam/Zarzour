@@ -58,11 +58,14 @@ class OrderInfolist
                         RepeatableEntry::make('items')
                             ->label('')
                             ->schema([
-                                Grid::make(5)->schema([
+                                Grid::make(4)->schema([
                                     TextEntry::make('product_name_snapshot')->label('المنتج'),
                                     TextEntry::make('quantity')->label('الكمية'),
                                     TextEntry::make('unit_price_snapshot')->label('سعر الوحدة')->numeric(2)->suffix(' ل.س'),
                                     TextEntry::make('line_total')->label('الإجمالي')->numeric(2)->suffix(' ل.س'),
+                                    TextEntry::make('direct_discount_amount')->label('خصم المنتج')->numeric(2)->suffix(' ل.س')->placeholder('غير متوفر'),
+                                    TextEntry::make('coupon_discount_amount')->label('خصم القسيمة')->numeric(2)->suffix(' ل.س')->placeholder('غير متوفر'),
+                                    TextEntry::make('offer_discount_amount')->label('خصم العرض')->numeric(2)->suffix(' ل.س')->placeholder('غير متوفر'),
                                     IconEntry::make('is_gift')->label('هدية؟')->boolean(),
                                 ]),
                             ]),
@@ -73,6 +76,7 @@ class OrderInfolist
                         Grid::make(3)->schema([
                             TextEntry::make('subtotal')->label('المجموع الفرعي')->numeric(2)->suffix(' ل.س'),
                             TextEntry::make('discount_amount')->label('قيمة الخصم')->numeric(2)->suffix(' ل.س'),
+                            TextEntry::make('coupon_discount_amount')->label('خصم القسيمة')->numeric(2)->suffix(' ل.س')->placeholder('غير متوفر للطلبات القديمة'),
                             TextEntry::make('shipping_fee')->label('رسوم الشحن')->numeric(2)->suffix(' ل.س'),
                             TextEntry::make('total')->label('الإجمالي الكلي')->numeric(2)->suffix(' ل.س'),
                             TextEntry::make('coupon.code')->label('كود الخصم المستخدم')->placeholder('—'),

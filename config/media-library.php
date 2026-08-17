@@ -50,7 +50,10 @@ return [
      * The maximum file size of an item in bytes.
      * Adding a larger file will result in an exception.
      */
-    'max_file_size' => 1024 * 1024 * 50, // 50MB (matches catalog.media.max_video_size_kb)
+    'max_file_size' => max(
+        (int) env('CATALOG_MAX_IMAGE_SIZE_KB', 20 * 1024),
+        (int) env('CATALOG_MAX_VIDEO_SIZE_KB', 50 * 1024),
+    ) * 1024,
 
     /*
      * Uploads whose file name contains any of these extensions will be rejected.
@@ -78,7 +81,7 @@ return [
      * This queue connection will be used to generate derived and responsive images.
      * Leave empty to use the default queue connection.
      */
-    'queue_connection_name' => env('QUEUE_CONNECTION', 'sync'),
+    'queue_connection_name' => env('MEDIA_QUEUE_CONNECTION', env('QUEUE_CONNECTION', 'sync')),
 
     /*
      * This queue will be used to generate derived and responsive images.

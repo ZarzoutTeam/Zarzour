@@ -12,6 +12,17 @@ class CalculateCartRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $couponCode = $this->input('coupon_code');
+        $phoneNumber = $this->input('phone_number');
+
+        $this->merge([
+            'coupon_code' => is_string($couponCode) ? strtoupper(trim($couponCode)) : $couponCode,
+            'phone_number' => is_string($phoneNumber) ? trim($phoneNumber) : $phoneNumber,
+        ]);
+    }
+
     /**
      * @return array<string, array<int, mixed>>
      */
@@ -19,10 +30,10 @@ class CalculateCartRequest extends FormRequest
     {
         return [
             'lines' => ['required', 'array', 'min:1'],
-            'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            'lines.*.product_id' => ['required', 'integer', 'distinct', 'exists:products,id'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
-            'coupon_code' => ['nullable', 'string'],
-            'phone_number' => ['nullable', 'string'],
+            'coupon_code' => ['nullable', 'string', 'max:255'],
+            'phone_number' => ['nullable', 'string', 'regex:/^09[0-9]{8}$/'],
             'province_id' => ['nullable', 'integer', new ActiveProvinceExists],
         ];
     }

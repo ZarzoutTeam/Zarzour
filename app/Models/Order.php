@@ -41,6 +41,7 @@ class Order extends Model
         'extra_notes',
         'subtotal',
         'discount_amount',
+        'coupon_discount_amount',
         'shipping_fee',
         'total',
         'coupon_id',
@@ -56,6 +57,7 @@ class Order extends Model
         return [
             'subtotal' => 'decimal:2',
             'discount_amount' => 'decimal:2',
+            'coupon_discount_amount' => 'decimal:2',
             'shipping_fee' => 'decimal:2',
             'total' => 'decimal:2',
             'reserved_until' => 'datetime',

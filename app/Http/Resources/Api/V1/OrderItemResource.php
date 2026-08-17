@@ -20,6 +20,10 @@ class OrderItemResource extends JsonResource
             'quantity' => $this->quantity,
             'unit_price' => (float) $this->unit_price_snapshot,
             'line_total' => (float) $this->line_total,
+            'direct_discount_amount' => $this->direct_discount_amount !== null ? (float) $this->direct_discount_amount : null,
+            'coupon_discount_amount' => $this->coupon_discount_amount !== null ? (float) $this->coupon_discount_amount : null,
+            'offer_discount_amount' => $this->offer_discount_amount !== null ? (float) $this->offer_discount_amount : null,
+            'offer_id' => $this->offer_id,
             'is_gift' => $this->is_gift,
         ];
     }

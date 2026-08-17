@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Support\CatalogImageUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -103,11 +104,10 @@ class ProductForm
                 Section::make('الصور والفيديو')
                     ->description('الصور مرتبة حسب السحب؛ أول صورة هي الصورة الرئيسية للمنتج.')
                     ->schema([
-                        SpatieMediaLibraryFileUpload::make('images')
+                        CatalogImageUpload::configure(SpatieMediaLibraryFileUpload::make('images')
                             ->label('صور المنتج')
                             ->collection('images')
-                            ->conversion('medium')
-                            ->image()
+                            ->conversion('medium'))
                             ->imageEditor()
                             ->imageEditorAspectRatioOptions([
                                 null,
@@ -117,15 +117,14 @@ class ProductForm
                                 '16:9',
                             ])
                             ->multiple()
+                            ->maxFiles((int) config('catalog.media.max_product_images'))
                             ->reorderable()
                             ->appendFiles()
                             ->panelLayout('grid')
                             ->itemPanelAspectRatio('1:1')
                             ->openable()
                             ->downloadable()
-                            ->maxSize(config('catalog.media.max_image_size_kb'))
-                            ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
-                            ->helperText('اسحب المصغرات لتغيير ترتيبها؛ أول صورة هي الرئيسية. استخدم زر القلم للقص والتدوير، وزر الفتح لمعاينة الصورة كاملة.')
+                            ->helperText(CatalogImageUpload::limitsDescription().' اسحب المصغرات لتغيير ترتيبها، وأول صورة هي الرئيسية.')
                             ->columnSpanFull(),
                         SpatieMediaLibraryFileUpload::make('video')
                             ->label('فيديو المنتج')
