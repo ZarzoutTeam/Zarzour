@@ -9,6 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -22,6 +23,10 @@ class CategoriesTable
         return $table
             ->defaultSort('sort_order')
             ->columns([
+                SpatieMediaLibraryImageColumn::make('image')
+                    ->label('الصورة')
+                    ->collection('image')
+                    ->conversion('thumbnail'),
                 TextColumn::make('name')
                     ->label('الاسم')
                     ->searchable(),

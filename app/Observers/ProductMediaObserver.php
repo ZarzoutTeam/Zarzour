@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Banner;
+use App\Models\Category;
 use App\Models\HomepageSetting;
 use App\Models\Product;
 use App\Support\CatalogCache;
@@ -22,6 +23,13 @@ class ProductMediaObserver
 
     private function invalidateIfRelevant(Media $media): void
     {
+        if ($media->model_type === Category::class && $media->collection_name === 'image') {
+            CatalogCache::forgetCategories();
+            CatalogCache::forgetHome();
+
+            return;
+        }
+
         if ($media->model_type === Banner::class && $media->collection_name === 'image') {
             CatalogCache::forgetBanners();
             CatalogCache::forgetHome();

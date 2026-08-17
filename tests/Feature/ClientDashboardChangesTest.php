@@ -283,6 +283,35 @@ class ClientDashboardChangesTest extends TestCase
         $this->assertContains($category->id, collect($response->json('data'))->pluck('id')->all());
     }
 
+    public function test_category_image_is_exposed_and_invalidates_category_caches(): void
+    {
+        Storage::fake('public');
+
+        $category = Category::factory()->create([
+            'parent_id' => null,
+            'is_active' => true,
+        ]);
+
+        Cache::put(CatalogCache::ACTIVE_CATEGORIES, ['stale' => true], now()->addMinutes(5));
+        Cache::put(CatalogCache::HOME_SNAPSHOT, ['stale' => true], now()->addMinutes(5));
+
+        $category
+            ->addMedia(UploadedFile::fake()->image('category.jpg'))
+            ->toMediaCollection('image');
+
+        $this->assertFalse(Cache::has(CatalogCache::ACTIVE_CATEGORIES));
+        $this->assertFalse(Cache::has(CatalogCache::HOME_SNAPSHOT));
+
+        $response = $this->getJson('/api/v1/categories');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $category->id);
+
+        $this->assertStringContainsString('category', $response->json('data.0.image.medium'));
+        $this->assertStringContainsString('category', $response->json('data.0.image.thumbnail'));
+    }
+
     public function test_product_image_media_change_invalidates_home_snapshot(): void
     {
         Storage::fake('public');

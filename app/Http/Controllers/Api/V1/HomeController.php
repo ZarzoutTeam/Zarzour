@@ -78,7 +78,10 @@ class HomeController extends Controller
             ->active()
             ->whereNull('parent_id')
             ->orderBy('sort_order')
-            ->with(['children' => fn ($query) => $query->active()->orderBy('sort_order')])
+            ->with([
+                'media',
+                'children' => fn ($query) => $query->active()->orderBy('sort_order')->with('media'),
+            ])
             ->get();
     }
 

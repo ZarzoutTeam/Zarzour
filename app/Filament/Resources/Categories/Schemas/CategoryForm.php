@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Categories\Schemas;
 
 use App\Models\Category;
+use App\Support\CatalogImageUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -68,6 +70,27 @@ class CategoryForm
                             ->helperText('عند التعطيل لن تظهر الفئة ضمن قوائم المتجر للعملاء.')
                             ->default(true)
                             ->required(),
+                    ])
+                    ->columnSpanFull(),
+                Section::make('صورة الفئة')
+                    ->description('الصورة التي تمثل الفئة في الصفحة الرئيسية وقائمة الفئات.')
+                    ->schema([
+                        CatalogImageUpload::configure(SpatieMediaLibraryFileUpload::make('image')
+                            ->label('الصورة')
+                            ->collection('image')
+                            ->conversion('medium'))
+                            ->imageEditor()
+                            ->imageEditorAspectRatioOptions([
+                                null,
+                                '1:1',
+                                '4:3',
+                                '3:2',
+                                '16:9',
+                            ])
+                            ->openable()
+                            ->downloadable()
+                            ->helperText(CatalogImageUpload::limitsDescription().' اختيارية، ويُنصح بصورة مربعة أو أفقية واضحة.')
+                            ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
             ]);

@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Category extends Model
+class Category extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'name',
@@ -26,6 +30,39 @@ class Category extends Model
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('image')
+            ->useDisk('public')
+            ->singleFile()
+            ->acceptsMimeTypes(config('catalog.media.allowed_image_mimes'));
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumbnail')
+            ->performOnCollections('image')
+            ->fit(
+                Fit::Max,
+                (int) config('catalog.media.conversions.thumbnail.dimension'),
+                (int) config('catalog.media.conversions.thumbnail.dimension'),
+            )
+            ->quality((int) config('catalog.media.conversions.thumbnail.quality'))
+            ->format('webp')
+            ->queued();
+
+        $this->addMediaConversion('medium')
+            ->performOnCollections('image')
+            ->fit(
+                Fit::Max,
+                (int) config('catalog.media.conversions.medium.dimension'),
+                (int) config('catalog.media.conversions.medium.dimension'),
+            )
+            ->quality((int) config('catalog.media.conversions.medium.quality'))
+            ->format('webp')
+            ->queued();
     }
 
     /**
