@@ -111,56 +111,63 @@ html[dir='rtl']
     text-align: left;
 }
 
+/*
+ * FilePond calculates item positions and drag offsets in LTR coordinates.
+ * Keep its canvas LTR inside the Arabic panel, while retaining Arabic labels.
+ */
 html[dir='rtl'] .fi-fo-file-upload .filepond--root,
-html[dir='rtl'] .fi-fo-file-upload .filepond--drop-label,
 html[dir='rtl'] .fi-fo-file-upload .filepond--file {
+    direction: ltr;
+    text-align: left;
+}
+
+html[dir='rtl'] .fi-fo-file-upload .filepond--drop-label {
+    direction: rtl;
+    text-align: center;
+}
+
+html[dir='rtl']
+    .fi-fo-file-upload
+    :is(.filepond--file-info, .filepond--file-status) {
     direction: rtl;
     text-align: right;
 }
 
-html[dir='rtl'] .fi-fo-file-upload .filepond--file-info {
-    margin-inline: 0 0.5em;
-    transform: translateX(0);
+/* Compact media cards make previewing, editing, and drag reordering practical. */
+.fi-fo-file-upload
+    .filepond--root[data-style-panel-layout='grid']
+    .filepond--item {
+    width: calc(50% - 0.5rem);
 }
 
-html[dir='rtl'] .fi-fo-file-upload .filepond--file-status {
-    margin-inline: auto 2.25em;
-    text-align: left;
+.fi-fo-file-upload .filepond--image-preview {
+    background: #f3f4f6;
 }
 
-html[dir='rtl']
+.dark .fi-fo-file-upload .filepond--image-preview {
+    background: #111827;
+}
+
+.fi-fo-file-upload .filepond--media-preview video {
+    max-height: 22rem;
+    object-fit: contain;
+    background: #111;
+}
+
+@media (min-width: 48rem) {
     .fi-fo-file-upload
-    [data-filepond-item-state*='error']
-    .filepond--file-info,
-html[dir='rtl']
+        .filepond--root[data-style-panel-layout='grid']
+        .filepond--item {
+        width: calc(25% - 0.5rem);
+    }
+}
+
+@media (min-width: 80rem) {
     .fi-fo-file-upload
-    [data-filepond-item-state*='invalid']
-    .filepond--file-info {
-    margin-inline: 0 2.25em;
-}
-
-html[dir='rtl'] .fi-fo-file-upload .filepond--file [data-align*='left'] {
-    right: 0.5625em;
-    left: auto;
-}
-
-html[dir='rtl'] .fi-fo-file-upload .filepond--file [data-align*='right'] {
-    right: auto;
-    left: 0.5625em;
-}
-
-html[dir='rtl']
-    .fi-fo-file-upload
-    .filepond--progress-indicator[data-align*='right'] {
-    margin-right: 0;
-    margin-left: 0.1875em;
-}
-
-html[dir='rtl']
-    .fi-fo-file-upload
-    .filepond--progress-indicator[data-align*='left'] {
-    margin-right: 0.1875em;
-    margin-left: 0;
+        .filepond--root[data-style-panel-layout='grid']
+        .filepond--item {
+        width: calc(20% - 0.5rem);
+    }
 }
 
 html[dir='rtl']

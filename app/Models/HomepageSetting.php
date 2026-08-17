@@ -30,14 +30,17 @@ class HomepageSetting extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('hero_image')
+            ->useDisk('public')
             ->singleFile()
             ->acceptsMimeTypes(config('catalog.media.allowed_image_mimes'));
 
         $this->addMediaCollection('hero_video')
+            ->useDisk('public')
             ->singleFile()
             ->acceptsMimeTypes(config('catalog.media.allowed_video_mimes'));
 
         $this->addMediaCollection('hero_poster')
+            ->useDisk('public')
             ->singleFile()
             ->acceptsMimeTypes(config('catalog.media.allowed_image_mimes'));
     }

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
-use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -101,17 +100,6 @@ class ProductForm
                     ])
                     ->columns(2)
                     ->columnSpanFull(),
-                Section::make('المواصفات الإضافية')
-                    ->description('أضف مواصفات مرنة مثل اللون أو الخامة أو بلد المنشأ.')
-                    ->schema([
-                        KeyValue::make('extra_info')
-                            ->label('المواصفات')
-                            ->keyLabel('اسم الخاصية')
-                            ->valueLabel('القيمة')
-                            ->helperText('مثال: اسم الخاصية «اللون»، والقيمة «أسود».')
-                            ->columnSpanFull(),
-                    ])
-                    ->columnSpanFull(),
                 Section::make('الصور والفيديو')
                     ->description('الصور مرتبة حسب السحب؛ أول صورة هي الصورة الرئيسية للمنتج.')
                     ->schema([
@@ -130,18 +118,24 @@ class ProductForm
                             ])
                             ->multiple()
                             ->reorderable()
+                            ->appendFiles()
                             ->panelLayout('grid')
+                            ->itemPanelAspectRatio('1:1')
+                            ->openable()
+                            ->downloadable()
                             ->maxSize(config('catalog.media.max_image_size_kb'))
                             ->acceptedFileTypes(config('catalog.media.allowed_image_mimes'))
-                            ->helperText('يمكنك قص كل صورة وتدويرها وتكبيرها بعد رفعها، ثم سحب الصور لتغيير ترتيبها.')
+                            ->helperText('اسحب المصغرات لتغيير ترتيبها؛ أول صورة هي الرئيسية. استخدم زر القلم للقص والتدوير، وزر الفتح لمعاينة الصورة كاملة.')
                             ->columnSpanFull(),
                         SpatieMediaLibraryFileUpload::make('video')
                             ->label('فيديو المنتج')
                             ->collection('video')
-                            ->previewable(false)
+                            ->previewable()
+                            ->openable()
+                            ->downloadable()
                             ->maxSize(config('catalog.media.max_video_size_kb'))
                             ->acceptedFileTypes(config('catalog.media.allowed_video_mimes'))
-                            ->helperText('اختياري. ارفع فيديو قصيراً بصيغة مدعومة لعرض المنتج بشكل أوضح.')
+                            ->helperText('اختياري. ارفع فيديو MP4 قصيراً؛ ستظهر معاينته داخل النموذج بعد اكتمال الرفع.')
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),

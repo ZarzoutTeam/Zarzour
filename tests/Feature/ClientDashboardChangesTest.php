@@ -37,6 +37,28 @@ class ClientDashboardChangesTest extends TestCase
             ->assertJsonPath('data.prices.USD', 6.5);
     }
 
+    public function test_product_api_exposes_uploaded_video_url(): void
+    {
+        Storage::fake('public');
+
+        $product = Product::factory()->create();
+        $product
+            ->addMedia(UploadedFile::fake()->create('product.mp4', 1024, 'video/mp4'))
+            ->toMediaCollection('video');
+
+        $this->assertSame('public', $product->getFirstMedia('video')?->disk);
+
+        $response = $this->getJson('/api/v1/products/'.$product->slug);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.media.0.collection', 'video')
+            ->assertJsonPath('data.media.0.thumbnail_url', null)
+            ->assertJsonPath('data.media.0.medium_url', null);
+
+        $this->assertStringEndsWith('.mp4', $response->json('data.media.0.url'));
+    }
+
     public function test_product_price_filter_can_target_usd(): void
     {
         Product::factory()->create(['price' => 100000, 'price_usd' => 5]);
