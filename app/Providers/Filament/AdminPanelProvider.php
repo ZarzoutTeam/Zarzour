@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Widgets\ExchangeRateWidget;
 use App\Filament\Widgets\SalesOverviewWidget;
 use App\Filament\Widgets\TopSellingProductsWidget;
 use App\Http\Middleware\ForceAdminLocale;
@@ -79,6 +80,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
+                ExchangeRateWidget::class,
                 SalesOverviewWidget::class,
                 TopSellingProductsWidget::class,
             ])

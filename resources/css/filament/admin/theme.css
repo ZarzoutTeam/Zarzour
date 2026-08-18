@@ -670,6 +670,134 @@ html[dir='rtl']
     gap: 1.5rem;
 }
 
+.zs-exchange-rate-widget .fi-section {
+    position: relative;
+    isolation: isolate;
+    border-color: color-mix(
+        in srgb,
+        var(--zs-green) 30%,
+        var(--zs-border)
+    );
+    background: linear-gradient(
+        115deg,
+        var(--zs-surface),
+        color-mix(in srgb, var(--zs-green) 7%, var(--zs-surface))
+    );
+    box-shadow: 0 14px 34px var(--zs-soft-shadow);
+}
+
+.zs-exchange-rate-widget .fi-section::after {
+    content: '$';
+    position: absolute;
+    z-index: -1;
+    inset-block-start: -2.75rem;
+    inset-inline-end: 1.5rem;
+    color: color-mix(in srgb, var(--zs-green) 9%, transparent);
+    font-size: 10rem;
+    font-weight: 800;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.zs-exchange-rate-widget__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.8fr);
+    gap: 2rem;
+    align-items: center;
+}
+
+.zs-exchange-rate-widget__summary {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+}
+
+.zs-exchange-rate-widget__icon {
+    display: grid;
+    width: 3.75rem;
+    height: 3.75rem;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--zs-green);
+    color: var(--zs-charcoal);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--zs-green) 28%, transparent);
+}
+
+.zs-exchange-rate-widget__icon .fi-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+.zs-exchange-rate-widget__copy h2 {
+    color: var(--zs-charcoal);
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.zs-exchange-rate-widget__copy > p:last-child {
+    margin-block-start: 0.25rem;
+    color: color-mix(in srgb, var(--zs-charcoal) 68%, var(--zs-surface));
+    font-size: 0.875rem;
+}
+
+.zs-exchange-rate-widget__eyebrow {
+    margin-block-end: 0.2rem;
+    color: var(--zs-green-ink);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.zs-exchange-rate-widget__current {
+    display: flex;
+    min-width: 13rem;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--zs-green) 25%, var(--zs-border));
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--zs-surface) 82%, transparent);
+}
+
+.zs-exchange-rate-widget__current span {
+    color: color-mix(in srgb, var(--zs-charcoal) 62%, var(--zs-surface));
+    font-size: 0.75rem;
+}
+
+.zs-exchange-rate-widget__current strong {
+    color: var(--zs-charcoal);
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.zs-exchange-rate-widget__form {
+    display: grid;
+    gap: 0.85rem;
+    padding: 1rem;
+    border-inline-start: 1px solid var(--zs-border);
+}
+
+.zs-exchange-rate-widget__form .fi-btn {
+    justify-self: end;
+}
+
+@media (max-width: 64rem) {
+    .zs-exchange-rate-widget__layout,
+    .zs-exchange-rate-widget__summary {
+        grid-template-columns: 1fr;
+    }
+
+    .zs-exchange-rate-widget__current {
+        min-width: 0;
+    }
+
+    .zs-exchange-rate-widget__form {
+        padding: 1rem 0 0;
+        border-block-start: 1px solid var(--zs-border);
+        border-inline-start: 0;
+    }
+}
+
 .zs-dashboard .fi-header {
     position: relative;
     overflow: hidden;

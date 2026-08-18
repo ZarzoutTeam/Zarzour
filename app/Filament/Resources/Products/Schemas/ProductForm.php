@@ -77,7 +77,7 @@ class ProductForm
                             ->rules([
                                 fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
                                     if (app(ExchangeRateService::class)->currentUsdToSypRate() === null) {
-                                        $fail('حدد سعر صرف الدولار من إعدادات الصفحة الرئيسية قبل حفظ المنتج.');
+                                        $fail('حدد سعر صرف الدولار من لوحة التحكم الرئيسية قبل حفظ المنتج.');
                                     }
                                 },
                             ]),
@@ -87,7 +87,7 @@ class ProductForm
                                 $rate = app(ExchangeRateService::class)->currentUsdToSypRate();
 
                                 return $rate === null
-                                    ? 'لم يُحدد سعر الصرف بعد. انتقل إلى إعدادات الصفحة الرئيسية وحدده أولاً.'
+                                    ? 'لم يُحدد سعر الصرف بعد. انتقل إلى لوحة التحكم الرئيسية وحدده أولاً.'
                                     : 'سعر الصرف الحالي: '.number_format($rate, 2).' ل.س لكل دولار.';
                             })
                             ->numeric()
