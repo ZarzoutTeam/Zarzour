@@ -15,6 +15,8 @@ class BannerResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $mediaType = $this->media_type === 'video' ? 'video' : 'image';
+        $media = $this->getFirstMedia($mediaType);
         $image = $this->getFirstMedia('image');
 
         return [
@@ -22,10 +24,21 @@ class BannerResource extends JsonResource
             'title' => $this->title,
             'subtitle' => $this->subtitle,
             'priority' => $this->priority,
+            'media_type' => $mediaType,
+            'media' => $media ? [
+                'type' => $mediaType,
+                'url' => $mediaType === 'image'
+                    ? $this->mediaUrl($media, 'hero')
+                    : $media->getFullUrl(),
+                'thumbnail_url' => $mediaType === 'image'
+                    ? $this->mediaUrl($media, 'thumbnail')
+                    : null,
+            ] : null,
             'image' => [
                 'hero' => $this->mediaUrl($image, 'hero') ?? '',
                 'thumbnail' => $this->mediaUrl($image, 'thumbnail') ?? '',
             ],
+            'video_url' => $mediaType === 'video' ? $media?->getFullUrl() : null,
             'product' => $this->whenLoaded('product', fn () => [
                 'id' => $this->product->id,
                 'slug' => $this->product->slug,

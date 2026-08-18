@@ -13,9 +13,13 @@ class CheckoutConfigController extends Controller
 
     public function __invoke(): JsonResponse
     {
+        $settings = HomepageSetting::query()->first();
+
         return $this->success([
             'currency' => 'SYP',
-            'payment_methods' => HomepageSetting::publicPaymentMethods(),
+            'exchange_rate' => $settings?->exchangeRatePayload(),
+            'payment_methods' => $settings?->paymentMethodsPayload()
+                ?? HomepageSetting::publicPaymentMethods(),
         ]);
     }
 }

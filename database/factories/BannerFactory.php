@@ -16,6 +16,7 @@ class BannerFactory extends Factory
         return [
             'title' => fake()->sentence(3),
             'subtitle' => fake()->sentence(6),
+            'media_type' => 'image',
             'product_id' => Product::factory(),
             'priority' => fake()->numberBetween(0, 10),
             'starts_at' => null,

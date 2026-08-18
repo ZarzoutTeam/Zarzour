@@ -7,6 +7,7 @@ use App\Support\CatalogImageUpload;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -18,6 +19,19 @@ class HomepageSettingForm
     {
         return $schema
             ->components([
+                Section::make('سعر صرف الدولار')
+                    ->description('تعتمد جميع أسعار المنتجات بالليرة السورية على هذا السعر.')
+                    ->schema([
+                        TextInput::make('usd_to_syp_rate')
+                            ->label('سعر الدولار بالليرة السورية')
+                            ->helperText('عند الحفظ ستُعاد حسابات الأسعار السورية لكل المنتجات التي لها سعر بالدولار مباشرةً.')
+                            ->required()
+                            ->numeric()
+                            ->minValue(0.01)
+                            ->step(0.01)
+                            ->suffix('ل.س لكل دولار'),
+                    ])
+                    ->columnSpanFull(),
                 Section::make('الغلاف الرئيسي للتطبيق')
                     ->description('هذه الوسائط تظهر أعلى الصفحة الرئيسية. أما اللافتات الإعلانية فتُدار من قسم مستقل.')
                     ->schema([

@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Services\ExchangeRateService;
 use App\Support\CatalogImageUpload;
+use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -58,24 +60,40 @@ class ProductForm
                     ->columns(2)
                     ->columnSpanFull(),
                 Section::make('السعر والمخزون')
-                    ->description('حدد سعري البيع والكمية الفعلية المتاحة للطلبات.')
+                    ->description('أدخل السعر بالدولار؛ يُحسب السعر السوري تلقائياً وفق سعر الصرف المحدد في إعدادات المتجر.')
                     ->schema([
-                        TextInput::make('price_syp')
-                            ->label('السعر بالليرة السورية')
-                            ->helperText('السعر المعروض عندما يختار العميل الليرة السورية.')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0)
-                            ->step(0.01)
-                            ->suffix('ل.س'),
                         TextInput::make('price_usd')
                             ->label('السعر بالدولار الأمريكي')
-                            ->helperText('السعر المعروض عندما يختار العميل الدولار الأمريكي.')
+                            ->helperText('هذا هو السعر الأساسي للمنتج، ومنه يُحسب السعر بالليرة السورية.')
                             ->required()
                             ->numeric()
                             ->minValue(0)
                             ->step(0.01)
-                            ->suffix('دولار'),
+                            ->suffix('دولار')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state, callable $set): void {
+                                $set('price_syp', app(ExchangeRateService::class)->convertUsdToSyp($state));
+                            })
+                            ->rules([
+                                fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                                    if (app(ExchangeRateService::class)->currentUsdToSypRate() === null) {
+                                        $fail('حدد سعر صرف الدولار من إعدادات الصفحة الرئيسية قبل حفظ المنتج.');
+                                    }
+                                },
+                            ]),
+                        TextInput::make('price_syp')
+                            ->label('السعر المحسوب بالليرة السورية')
+                            ->helperText(function (): string {
+                                $rate = app(ExchangeRateService::class)->currentUsdToSypRate();
+
+                                return $rate === null
+                                    ? 'لم يُحدد سعر الصرف بعد. انتقل إلى إعدادات الصفحة الرئيسية وحدده أولاً.'
+                                    : 'سعر الصرف الحالي: '.number_format($rate, 2).' ل.س لكل دولار.';
+                            })
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->suffix('ل.س'),
                         TextInput::make('stock_quantity')
                             ->label('الكمية في المخزون')
                             ->helperText('الكمية الإجمالية قبل طرح الكميات المحجوزة في الطلبات الجارية.')

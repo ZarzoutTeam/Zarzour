@@ -10,6 +10,11 @@ class EditBanner extends EditRecord
 {
     protected static string $resource = BannerResource::class;
 
+    protected function afterSave(): void
+    {
+        $this->getRecord()->clearInactiveMedia();
+    }
+
     protected function getHeaderActions(): array
     {
         return [

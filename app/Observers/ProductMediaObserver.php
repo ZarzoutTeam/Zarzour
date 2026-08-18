@@ -30,7 +30,10 @@ class ProductMediaObserver
             return;
         }
 
-        if ($media->model_type === Banner::class && $media->collection_name === 'image') {
+        if (
+            $media->model_type === Banner::class
+            && in_array($media->collection_name, ['image', 'video'], true)
+        ) {
             CatalogCache::forgetBanners();
             CatalogCache::forgetHome();
 

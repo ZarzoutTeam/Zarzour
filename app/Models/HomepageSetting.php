@@ -15,6 +15,7 @@ class HomepageSetting extends Model implements HasMedia
 
     protected $fillable = [
         'key',
+        'usd_to_syp_rate',
         'hero_media_type',
         'hero_enabled',
         'payment_methods',
@@ -23,8 +24,25 @@ class HomepageSetting extends Model implements HasMedia
     protected function casts(): array
     {
         return [
+            'usd_to_syp_rate' => 'decimal:2',
             'hero_enabled' => 'boolean',
             'payment_methods' => 'array',
+        ];
+    }
+
+    /**
+     * @return array{base_currency: string, quote_currency: string, rate: float}|null
+     */
+    public function exchangeRatePayload(): ?array
+    {
+        if ($this->usd_to_syp_rate === null) {
+            return null;
+        }
+
+        return [
+            'base_currency' => 'USD',
+            'quote_currency' => 'SYP',
+            'rate' => (float) $this->usd_to_syp_rate,
         ];
     }
 

@@ -9,6 +9,7 @@ use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class BannerForm
@@ -69,9 +70,19 @@ class BannerForm
                     ])
                     ->columns(3)
                     ->columnSpanFull(),
-                Section::make('صورة اللافتة')
-                    ->description('استخدم صورة أفقية واضحة، وتجنب وضع نصوص مهمة قرب الحواف.')
+                Section::make('وسائط اللافتة')
+                    ->description('اختر صورة أفقية أو فيديو قصيراً ليظهر داخل اللافتة الإعلانية.')
                     ->schema([
+                        Select::make('media_type')
+                            ->label('نوع الوسائط')
+                            ->options([
+                                'image' => 'صورة',
+                                'video' => 'فيديو',
+                            ])
+                            ->default('image')
+                            ->required()
+                            ->live()
+                            ->helperText('عند تغيير النوع وحفظ اللافتة، تُحذف وسائط النوع السابق.'),
                         CatalogImageUpload::configure(SpatieMediaLibraryFileUpload::make('image')
                             ->label('الصورة الإعلانية')
                             ->collection('image')
@@ -84,8 +95,21 @@ class BannerForm
                                 '16:9',
                                 '2:1',
                             ])
-                            ->required()
+                            ->required(fn (Get $get): bool => $get('media_type') === 'image')
+                            ->visible(fn (Get $get): bool => $get('media_type') === 'image')
                             ->helperText(CatalogImageUpload::limitsDescription().' تُعرض نسخة WebP عالية الدقة، ونسبة 3:1 مناسبة غالباً.')
+                            ->columnSpanFull(),
+                        SpatieMediaLibraryFileUpload::make('video')
+                            ->label('فيديو اللافتة')
+                            ->collection('video')
+                            ->previewable()
+                            ->openable()
+                            ->downloadable()
+                            ->required(fn (Get $get): bool => $get('media_type') === 'video')
+                            ->visible(fn (Get $get): bool => $get('media_type') === 'video')
+                            ->maxSize(config('catalog.media.max_video_size_kb'))
+                            ->acceptedFileTypes(config('catalog.media.allowed_video_mimes'))
+                            ->helperText('الصيغة المدعومة حالياً MP4، والحجم الأقصى الافتراضي 50 ميغابايت.')
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),

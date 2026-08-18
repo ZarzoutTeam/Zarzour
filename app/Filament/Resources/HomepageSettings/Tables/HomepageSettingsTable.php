@@ -26,6 +26,11 @@ class HomepageSettingsTable
                 IconColumn::make('hero_enabled')
                     ->label('الغلاف ظاهر')
                     ->boolean(),
+                TextColumn::make('usd_to_syp_rate')
+                    ->label('سعر الصرف')
+                    ->numeric(2)
+                    ->suffix(' ل.س / دولار')
+                    ->placeholder('غير محدد'),
                 TextColumn::make('payment_methods')
                     ->label('طرق الدفع')
                     ->state(function (HomepageSetting $record): string {

@@ -22,12 +22,17 @@ class BannersTable
             ->reorderable('priority')
             ->columns([
                 SpatieMediaLibraryImageColumn::make('image')
-                    ->label('الصورة')
+                    ->label('المعاينة')
                     ->collection('image')
                     ->conversion('thumbnail'),
                 TextColumn::make('title')
                     ->label('العنوان')
                     ->searchable(),
+                TextColumn::make('media_type')
+                    ->label('نوع الوسائط')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => $state === 'video' ? 'فيديو' : 'صورة')
+                    ->color(fn (string $state): string => $state === 'video' ? 'info' : 'gray'),
                 TextColumn::make('product.name')
                     ->label('المنتج')
                     ->badge()
@@ -42,7 +47,7 @@ class BannersTable
                 TextColumn::make('visibility_status')
                     ->label('الظهور الآن')
                     ->state(fn (Banner $record): string => match (true) {
-                        ! $record->hasMedia('image') => 'الصورة مفقودة',
+                        ! $record->hasMedia($record->media_type === 'video' ? 'video' : 'image') => 'الوسائط مفقودة',
                         ! $record->is_active => 'غير مفعّل',
                         $record->starts_at !== null && $record->starts_at->isFuture() => 'لم يبدأ',
                         $record->ends_at !== null && $record->ends_at->isPast() => 'منتهي',

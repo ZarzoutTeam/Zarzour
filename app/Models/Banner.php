@@ -18,6 +18,7 @@ class Banner extends Model implements HasMedia
     protected $fillable = [
         'title',
         'subtitle',
+        'media_type',
         'product_id',
         'priority',
         'starts_at',
@@ -41,6 +42,11 @@ class Banner extends Model implements HasMedia
             ->useDisk('public')
             ->singleFile()
             ->acceptsMimeTypes(config('catalog.media.allowed_image_mimes'));
+
+        $this->addMediaCollection('video')
+            ->useDisk('public')
+            ->singleFile()
+            ->acceptsMimeTypes(config('catalog.media.allowed_video_mimes'));
     }
 
     public function registerMediaConversions(?Media $media = null): void
@@ -87,6 +93,11 @@ class Banner extends Model implements HasMedia
         return $this->belongsTo(Product::class);
     }
 
+    public function clearInactiveMedia(): void
+    {
+        $this->clearMediaCollection($this->media_type === 'video' ? 'image' : 'video');
+    }
+
     /**
      * @param  Builder<Banner>  $query
      * @return Builder<Banner>
@@ -95,7 +106,15 @@ class Banner extends Model implements HasMedia
     {
         return $query
             ->where('is_active', true)
-            ->whereHas('media', fn (Builder $q) => $q->where('collection_name', 'image'))
+            ->where(function (Builder $q) {
+                $q->where(function (Builder $imageQuery) {
+                    $imageQuery->where('media_type', 'image')
+                        ->whereHas('media', fn (Builder $mediaQuery) => $mediaQuery->where('collection_name', 'image'));
+                })->orWhere(function (Builder $videoQuery) {
+                    $videoQuery->where('media_type', 'video')
+                        ->whereHas('media', fn (Builder $mediaQuery) => $mediaQuery->where('collection_name', 'video'));
+                });
+            })
             ->where(fn (Builder $q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
             ->where(fn (Builder $q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()));
     }

@@ -45,6 +45,7 @@ class HomeController extends Controller
             'featured_products' => ProductListResource::collection($snapshot['featured_products']),
             'offered_products' => ProductListResource::collection($snapshot['offered_products']),
             'hero_media' => $homepageSetting?->heroMediaPayload(),
+            'exchange_rate' => $homepageSetting?->exchangeRatePayload(),
             'payment_methods' => $homepageSetting?->paymentMethodsPayload()
                 ?? HomepageSetting::publicPaymentMethods(),
         ]);
