@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\Conversions\ConversionCollection;
 use Tests\TestCase;
+use Tests\Support\FakeMedia;
 
 class ClientDashboardChangesTest extends TestCase
 {
@@ -59,7 +60,7 @@ class ClientDashboardChangesTest extends TestCase
 
         $product = Product::factory()->create();
         $product
-            ->addMedia(UploadedFile::fake()->create('product.mp4', 1024, 'video/mp4'))
+            ->addMedia(FakeMedia::mp4('product.mp4'))
             ->toMediaCollection('video');
 
         $this->assertSame('public', $product->getFirstMedia('video')?->disk);
@@ -228,7 +229,7 @@ class ClientDashboardChangesTest extends TestCase
         ]);
 
         $settings
-            ->addMedia(UploadedFile::fake()->create('hero.mp4', 500, 'video/mp4'))
+            ->addMedia(FakeMedia::mp4('hero.mp4'))
             ->toMediaCollection('hero_video');
 
         $response = $this->getJson('/api/v1/home');

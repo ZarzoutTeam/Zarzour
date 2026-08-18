@@ -10,6 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use Tests\Support\FakeMedia;
 
 class BannerVideoTest extends TestCase
 {
@@ -30,7 +31,7 @@ class BannerVideoTest extends TestCase
             ->assertJsonCount(0, 'data');
 
         $banner
-            ->addMedia(UploadedFile::fake()->create('banner.mp4', 1024, 'video/mp4'))
+            ->addMedia(FakeMedia::mp4('banner.mp4'))
             ->toMediaCollection('video');
 
         $this->assertFalse(Cache::has(CatalogCache::ACTIVE_BANNERS));
@@ -64,7 +65,7 @@ class BannerVideoTest extends TestCase
             ->addMedia(UploadedFile::fake()->image('banner.jpg'))
             ->toMediaCollection('image');
         $banner
-            ->addMedia(UploadedFile::fake()->create('banner.mp4', 1024, 'video/mp4'))
+            ->addMedia(FakeMedia::mp4('banner.mp4'))
             ->toMediaCollection('video');
 
         $banner->update(['media_type' => 'video']);
