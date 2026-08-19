@@ -144,6 +144,14 @@ class Product extends Model implements HasMedia
     }
 
     /**
+     * @return HasMany<OfferGift, $this>
+     */
+    public function offerGiftLinks(): HasMany
+    {
+        return $this->hasMany(OfferGift::class, 'gift_product_id');
+    }
+
+    /**
      * @return HasMany<OrderItem, $this>
      */
     public function orderItems(): HasMany
@@ -165,6 +173,15 @@ class Product extends Model implements HasMedia
     public function banners(): HasMany
     {
         return $this->hasMany(Banner::class);
+    }
+
+    public function hasDeletionBlockingRelations(): bool
+    {
+        return $this->discounts()->exists()
+            || $this->offers()->exists()
+            || $this->offerGiftLinks()->exists()
+            || $this->orderItems()->exists()
+            || $this->stockMovements()->exists();
     }
 
     public function getAvailableQuantityAttribute(): int

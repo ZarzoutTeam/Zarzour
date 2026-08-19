@@ -85,17 +85,12 @@ class ProductsTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make()
-                    ->before(function (Product $record, DeleteAction $action) {
-                        if (
-                            $record->discounts()->exists()
-                            || $record->offers()->exists()
-                            || $record->orderItems()->exists()
-                            || $record->stockMovements()->exists()
-                        ) {
+                    ->before(function (Product $record, DeleteAction $action): void {
+                        if ($record->hasDeletionBlockingRelations()) {
                             Notification::make()
                                 ->danger()
                                 ->title('لا يمكن حذف المنتج')
-                                ->body('هذا المنتج مرتبط بطلبات أو خصومات أو عروض ولا يمكن حذفه.')
+                                ->body('هذا المنتج مرتبط بطلبات أو حركات مخزون أو خصومات أو عروض. ألغِ تفعيله بدلًا من حذفه، أو أزل الارتباطات غير التاريخية أولًا.')
                                 ->send();
 
                             $action->halt();
@@ -104,7 +99,20 @@ class ProductsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->before(function (Collection $records, DeleteBulkAction $action): void {
+                            if (! $records->contains(fn (Product $record): bool => $record->hasDeletionBlockingRelations())) {
+                                return;
+                            }
+
+                            Notification::make()
+                                ->danger()
+                                ->title('تعذر حذف المنتجات المحددة')
+                                ->body('يتضمن التحديد منتجات مرتبطة بطلبات أو حركات مخزون أو خصومات أو عروض. ألغِ تفعيلها بدلًا من حذفها، أو أزل الارتباطات غير التاريخية أولًا.')
+                                ->send();
+
+                            $action->halt();
+                        }),
                     BulkAction::make('activate')
                         ->label('تفعيل المحدد')
                         ->icon(Heroicon::OutlinedCheckCircle)
