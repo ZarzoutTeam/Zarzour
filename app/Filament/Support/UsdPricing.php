@@ -2,8 +2,9 @@
 
 namespace App\Filament\Support;
 
+use App\Rules\ExchangeRateConfigured;
 use App\Services\ExchangeRateService;
-use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
 
 final class UsdPricing
 {
@@ -21,12 +22,8 @@ final class UsdPricing
             : 'محسوب تلقائياً بسعر صرف '.number_format($rate, 2).' ل.س لكل دولار.';
     }
 
-    public static function exchangeRateConfiguredRule(): Closure
+    public static function exchangeRateConfiguredRule(): ValidationRule
     {
-        return function (string $attribute, mixed $value, Closure $fail): void {
-            if (app(ExchangeRateService::class)->currentUsdToSypRate() === null) {
-                $fail('حدد سعر صرف الدولار من لوحة التحكم الرئيسية قبل الحفظ.');
-            }
-        };
+        return new ExchangeRateConfigured;
     }
 }
