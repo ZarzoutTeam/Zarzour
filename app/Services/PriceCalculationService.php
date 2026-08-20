@@ -234,13 +234,13 @@ class PriceCalculationService
 
         if (! in_array($paymentCurrency, ['SYP', 'USD'], true)) {
             throw ValidationException::withMessages([
-                'currency' => ['العملة يجب أن تكون SYP أو USD.'],
+                'currency' => [__('http.invalid_currency')],
             ]);
         }
 
         if ($paymentCurrency === 'USD' && $rate === null) {
             throw ValidationException::withMessages([
-                'currency' => ['لا يمكن الدفع بالدولار قبل تحديد سعر الصرف من لوحة التحكم.'],
+                'currency' => [__('http.usd_exchange_rate_missing')],
             ]);
         }
 

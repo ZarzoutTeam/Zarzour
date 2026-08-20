@@ -43,12 +43,12 @@ class ApiExceptionRenderer
                 422,
             ],
             $e instanceof ValidationException => [
-                __('validation.failed_message'),
+                $this->firstValidationError($e),
                 $e->errors(),
                 422,
             ],
             $e instanceof AuthenticationException => [
-                __('auth.failed'),
+                __('auth.unauthenticated'),
                 null,
                 401,
             ],
@@ -84,5 +84,18 @@ class ApiExceptionRenderer
             'errors' => $errors,
             'message' => $message,
         ], $status);
+    }
+
+    private function firstValidationError(ValidationException $exception): string
+    {
+        foreach ($exception->errors() as $messages) {
+            foreach ($messages as $message) {
+                if (is_string($message) && $message !== '') {
+                    return $message;
+                }
+            }
+        }
+
+        return __('validation.failed_message');
     }
 }

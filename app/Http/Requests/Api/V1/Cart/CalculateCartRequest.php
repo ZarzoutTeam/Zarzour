@@ -37,13 +37,13 @@ class CalculateCartRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'lines' => ['required', 'array', 'min:1'],
-            'lines.*.product_id' => ['required', 'integer', 'distinct', 'exists:products,id'],
-            'lines.*.quantity' => ['required', 'integer', 'min:1'],
+            'lines' => ['bail', 'required', 'array', 'min:1'],
+            'lines.*.product_id' => ['bail', 'required', 'integer', 'distinct', 'exists:products,id'],
+            'lines.*.quantity' => ['bail', 'required', 'integer', 'min:1'],
             'coupon_code' => ['nullable', 'string', 'max:255'],
-            'phone_number' => ['nullable', 'string', 'regex:/^09[0-9]{8}$/'],
-            'province_id' => ['nullable', 'integer', new ActiveProvinceExists],
-            'currency' => ['sometimes', 'string', Rule::in(['SYP', 'USD'])],
+            'phone_number' => ['bail', 'nullable', 'string', 'regex:/^09[0-9]{8}$/'],
+            'province_id' => ['bail', 'nullable', 'integer', new ActiveProvinceExists],
+            'currency' => ['bail', 'sometimes', 'string', Rule::in(['SYP', 'USD'])],
         ];
     }
 }

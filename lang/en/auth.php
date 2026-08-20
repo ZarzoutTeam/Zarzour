@@ -13,7 +13,8 @@ return [
     |
     */
 
-    'failed' => 'These credentials do not match our records.',
+    'failed' => 'The phone number or password is incorrect.',
+    'unauthenticated' => 'You must log in to access this content.',
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
     'forbidden' => 'You are not authorized to perform this action.',

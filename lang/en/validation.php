@@ -167,7 +167,7 @@ return [
     'ulid' => 'The :attribute field must be a valid ULID.',
     'uuid' => 'The :attribute field must be a valid UUID.',
 
-    'failed_message' => 'The given data was invalid.',
+    'failed_message' => 'The request could not be completed. Check the submitted data and try again.',
 
     /*
     |--------------------------------------------------------------------------
@@ -181,8 +181,63 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'name' => [
+            'required' => 'Your name is required.',
+            'string' => 'Your name must be plain text.',
+            'max' => 'Your name must not exceed :max characters.',
+        ],
+        'customer_name' => [
+            'required' => 'The customer name is required to place the order.',
+            'string' => 'The customer name must be plain text.',
+            'max' => 'The customer name must not exceed :max characters.',
+        ],
+        'phone_number' => [
+            'required' => 'The phone number is required.',
+            'string' => 'The phone number must contain digits only.',
+            'regex' => 'The phone number must start with 09 and contain exactly 10 digits.',
+            'unique' => 'An account is already registered with this phone number.',
+        ],
+        'password' => [
+            'required' => 'The password is required.',
+            'string' => 'The password must be text.',
+            'min' => 'The password must be at least :min characters.',
+            'confirmed' => 'The password confirmation does not match.',
+        ],
+        'province_id' => [
+            'required' => 'Select a shipping province.',
+            'integer' => 'The selected province is invalid. Select a province from the list.',
+        ],
+        'shipping_address' => [
+            'required' => 'A shipping address is required to deliver the order.',
+            'string' => 'The shipping address must be plain text.',
+        ],
+        'payment_method' => [
+            'required' => 'Select a payment method.',
+            'in' => 'The selected payment method is currently unavailable. Select another method.',
+        ],
+        'currency' => [
+            'string' => 'The payment currency must be text.',
+            'in' => 'The payment currency must be SYP or USD.',
+        ],
+        'coupon_code' => [
+            'string' => 'The coupon code must be text.',
+            'max' => 'The coupon code is too long.',
+        ],
+        'lines' => [
+            'required' => 'Add at least one product to the cart.',
+            'array' => 'The cart items are in an invalid format.',
+            'min' => 'Add at least one product to the cart.',
+        ],
+        'lines.*.product_id' => [
+            'required' => 'Select a product for every cart item.',
+            'integer' => 'One of the product identifiers is invalid.',
+            'distinct' => 'The same product appears more than once. Send it once with the total quantity.',
+            'exists' => 'One of the selected products does not exist or is no longer available.',
+        ],
+        'lines.*.quantity' => [
+            'required' => 'Specify the requested quantity for every product.',
+            'integer' => 'The product quantity must be a whole number.',
+            'min' => 'The product quantity must be at least one.',
         ],
     ],
 
@@ -197,6 +252,21 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'name' => 'name',
+        'phone_number' => 'phone number',
+        'password' => 'password',
+        'password_confirmation' => 'password confirmation',
+        'province_id' => 'province',
+        'customer_name' => 'customer name',
+        'shipping_address' => 'shipping address',
+        'extra_notes' => 'additional notes',
+        'payment_method' => 'payment method',
+        'coupon_code' => 'coupon code',
+        'currency' => 'payment currency',
+        'lines' => 'cart items',
+        'lines.*.product_id' => 'product',
+        'lines.*.quantity' => 'quantity',
+    ],
 
 ];

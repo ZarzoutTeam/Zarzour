@@ -39,16 +39,16 @@ class StoreOrderRequest extends FormRequest
     {
         return [
             'customer_name' => ['required', 'string', 'max:255'],
-            'phone_number' => ['required', 'string', 'regex:/^09[0-9]{8}$/'],
-            'province_id' => ['required', 'integer', new ActiveProvinceExists],
+            'phone_number' => ['bail', 'required', 'string', 'regex:/^09[0-9]{8}$/'],
+            'province_id' => ['bail', 'required', 'integer', new ActiveProvinceExists],
             'shipping_address' => ['required', 'string'],
             'extra_notes' => ['nullable', 'string'],
-            'payment_method' => ['required', Rule::in(HomepageSetting::enabledPaymentMethodKeys())],
-            'currency' => ['sometimes', 'string', Rule::in(['SYP', 'USD'])],
+            'payment_method' => ['bail', 'required', Rule::in(HomepageSetting::enabledPaymentMethodKeys())],
+            'currency' => ['bail', 'sometimes', 'string', Rule::in(['SYP', 'USD'])],
             'coupon_code' => ['nullable', 'string', 'max:255'],
-            'lines' => ['required', 'array', 'min:1'],
-            'lines.*.product_id' => ['required', 'integer', 'distinct', 'exists:products,id'],
-            'lines.*.quantity' => ['required', 'integer', 'min:1'],
+            'lines' => ['bail', 'required', 'array', 'min:1'],
+            'lines.*.product_id' => ['bail', 'required', 'integer', 'distinct', 'exists:products,id'],
+            'lines.*.quantity' => ['bail', 'required', 'integer', 'min:1'],
         ];
     }
 }

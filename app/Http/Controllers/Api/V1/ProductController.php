@@ -31,7 +31,7 @@ class ProductController extends Controller
 
         if (! in_array($currency, ['SYP', 'USD'], true)) {
             throw ValidationException::withMessages([
-                'currency' => ['العملة يجب أن تكون SYP أو USD.'],
+                'currency' => [__('http.invalid_currency')],
             ]);
         }
 
