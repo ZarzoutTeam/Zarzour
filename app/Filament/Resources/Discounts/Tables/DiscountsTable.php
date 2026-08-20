@@ -27,9 +27,14 @@ class DiscountsTable
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => $state === 'percentage' ? 'نسبة مئوية' : 'مبلغ ثابت'),
                 TextColumn::make('value')
-                    ->label('قيمة الخصم')
+                    ->label('النسبة / القيمة بالليرة')
                     ->numeric(2)
                     ->suffix(fn (Discount $record): string => $record->type === 'percentage' ? '%' : ' ل.س'),
+                TextColumn::make('value_usd')
+                    ->label('القيمة الأساسية ($)')
+                    ->numeric(2)
+                    ->suffix(' دولار')
+                    ->placeholder('—'),
                 TextColumn::make('starts_at')
                     ->label('البدء')
                     ->dateTime()

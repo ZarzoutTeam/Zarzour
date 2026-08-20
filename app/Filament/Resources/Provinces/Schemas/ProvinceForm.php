@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Provinces\Schemas;
 
+use App\Filament\Support\UsdPricing;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class ProvinceForm
@@ -23,13 +25,23 @@ class ProvinceForm
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
-                        TextInput::make('shipping_fee')
-                            ->label('رسوم الشحن')
-                            ->helperText('تُضاف هذه القيمة تلقائياً إلى إجمالي الطلب عند اختيار المحافظة.')
+                        TextInput::make('shipping_fee_usd')
+                            ->label('أجرة الشحن بالدولار')
+                            ->helperText('هذه هي الأجرة الأساسية، وتُحوّل إلى الليرة تلقائياً.')
                             ->required()
                             ->numeric()
                             ->minValue(0)
                             ->step(0.01)
+                            ->suffix('دولار')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('shipping_fee', UsdPricing::convertToSyp($state)))
+                            ->rules([UsdPricing::exchangeRateConfiguredRule()]),
+                        TextInput::make('shipping_fee')
+                            ->label('أجرة الشحن المحسوبة بالليرة')
+                            ->helperText(UsdPricing::sypHelperText())
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated(false)
                             ->suffix('ل.س'),
                         Toggle::make('is_active')
                             ->label('الشحن متاح لهذه المحافظة')
@@ -37,7 +49,7 @@ class ProvinceForm
                             ->default(true)
                             ->required(),
                     ])
-                    ->columns(3)
+                    ->columns(4)
                     ->columnSpanFull(),
             ]);
     }

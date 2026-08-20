@@ -17,6 +17,7 @@ class DiscountFactory extends Factory
             'product_id' => Product::factory(),
             'type' => 'percentage',
             'value' => fake()->randomFloat(2, 5, 50),
+            'value_usd' => null,
             'starts_at' => null,
             'ends_at' => null,
             'is_active' => true,

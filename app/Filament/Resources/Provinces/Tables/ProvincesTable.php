@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Provinces\Tables;
 
+use App\Filament\Support\UsdPricing;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -22,10 +23,13 @@ class ProvincesTable
                 TextColumn::make('name')
                     ->label('اسم المحافظة')
                     ->searchable(),
-                TextInputColumn::make('shipping_fee')
-                    ->label('أجرة الشحن (ل.س)')
+                TextInputColumn::make('shipping_fee_usd')
+                    ->label('أجرة الشحن ($)')
                     ->type('number')
-                    ->rules(['required', 'numeric', 'min:0']),
+                    ->rules(['required', 'numeric', 'min:0', UsdPricing::exchangeRateConfiguredRule()]),
+                TextColumn::make('shipping_fee')
+                    ->label('المحسوب (ل.س)')
+                    ->numeric(2),
                 IconColumn::make('is_active')
                     ->label('مفعّلة')
                     ->boolean(),

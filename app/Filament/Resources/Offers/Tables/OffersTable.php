@@ -39,9 +39,14 @@ class OffersTable
                         default => '—',
                     }),
                 TextColumn::make('discount_value')
-                    ->label('قيمة الخصم')
+                    ->label('النسبة / القيمة بالليرة')
                     ->numeric(2)
                     ->suffix(fn (Offer $record): string => $record->discount_type === 'percentage' ? '%' : ' ل.س')
+                    ->placeholder('—'),
+                TextColumn::make('discount_value_usd')
+                    ->label('القيمة الأساسية ($)')
+                    ->numeric(2)
+                    ->suffix(' دولار')
                     ->placeholder('—'),
                 TextColumn::make('gifts.giftProduct.name')
                     ->label('منتج الهدية')

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Offers\Schemas;
 
+use App\Filament\Support\UsdPricing;
 use App\Models\Product;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -9,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class OfferForm
@@ -55,17 +57,38 @@ class OfferForm
                             ->helperText('النسبة تُحسب من سعر المنتج، أما المبلغ الثابت فيُخصم من كل قطعة.')
                             ->required(fn (Get $get): bool => $get('type') !== 'gift_only')
                             ->visible(fn (Get $get): bool => $get('type') !== 'gift_only')
-                            ->live(),
+                            ->live()
+                            ->afterStateUpdated(function (Set $set, ?string $state): void {
+                                if ($state === 'percentage') {
+                                    $set('discount_value_usd', null);
+                                } else {
+                                    $set('discount_value', null);
+                                }
+                            }),
+                        TextInput::make('discount_value_usd')
+                            ->label('قيمة الخصم بالدولار')
+                            ->helperText('المصدر الأساسي للخصم الثابت؛ يُحوّل إلى الليرة تلقائياً.')
+                            ->suffix('دولار')
+                            ->required(fn (Get $get): bool => $get('type') !== 'gift_only' && $get('discount_type') === 'fixed')
+                            ->visible(fn (Get $get): bool => $get('type') !== 'gift_only' && $get('discount_type') === 'fixed')
+                            ->numeric()
+                            ->minValue(0.01)
+                            ->step(0.01)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('discount_value', UsdPricing::convertToSyp($state)))
+                            ->rules([UsdPricing::exchangeRateConfiguredRule()]),
                         TextInput::make('discount_value')
-                            ->label('قيمة الخصم')
-                            ->helperText('أدخل رقماً فقط؛ تُفسر القيمة كنسبة أو كمبلغ حسب طريقة الاحتساب.')
+                            ->label(fn (Get $get): string => $get('discount_type') === 'fixed' ? 'الخصم المحسوب بالليرة' : 'نسبة الخصم')
+                            ->helperText(fn (Get $get): string => $get('discount_type') === 'fixed' ? UsdPricing::sypHelperText() : 'أدخل نسبة الخصم من سعر المنتج.')
                             ->suffix(fn (Get $get): string => $get('discount_type') === 'percentage' ? '%' : 'ل.س')
-                            ->required(fn (Get $get): bool => $get('type') !== 'gift_only')
+                            ->required(fn (Get $get): bool => $get('type') !== 'gift_only' && $get('discount_type') === 'percentage')
                             ->visible(fn (Get $get): bool => $get('type') !== 'gift_only')
                             ->numeric()
                             ->minValue(0.01)
                             ->maxValue(fn (Get $get): ?float => $get('discount_type') === 'percentage' ? 100.0 : null)
-                            ->step(0.01),
+                            ->step(0.01)
+                            ->disabled(fn (Get $get): bool => $get('discount_type') === 'fixed')
+                            ->dehydrated(fn (Get $get): bool => $get('discount_type') === 'percentage'),
                         Select::make('gift_product_id')
                             ->label('المنتج المقدم كهدية')
                             ->options(fn () => Product::query()->active()->pluck('name', 'id'))

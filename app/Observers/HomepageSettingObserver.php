@@ -16,8 +16,9 @@ class HomepageSettingObserver
             $homepageSetting->usd_to_syp_rate !== null
             && ($homepageSetting->wasRecentlyCreated || $homepageSetting->wasChanged('usd_to_syp_rate'))
         ) {
-            $this->exchangeRateService->syncProductPrices((float) $homepageSetting->usd_to_syp_rate);
+            $this->exchangeRateService->syncAllPrices((float) $homepageSetting->usd_to_syp_rate);
             CatalogCache::forgetBanners();
+            CatalogCache::forgetProvinces();
         }
 
         CatalogCache::forgetHome();

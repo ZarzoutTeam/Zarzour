@@ -41,6 +41,7 @@ class EditOffer extends EditRecord
         if (($data['type'] ?? null) === 'gift_only') {
             $data['discount_type'] = null;
             $data['discount_value'] = null;
+            $data['discount_value_usd'] = null;
         }
 
         try {

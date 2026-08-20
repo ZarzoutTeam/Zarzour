@@ -18,6 +18,7 @@ class OfferFactory extends Factory
             'type' => 'discount_only',
             'discount_type' => 'percentage',
             'discount_value' => fake()->randomFloat(2, 5, 30),
+            'discount_value_usd' => null,
             'starts_at' => null,
             'ends_at' => null,
             'is_active' => true,
@@ -37,6 +38,7 @@ class OfferFactory extends Factory
             'type' => 'gift_only',
             'discount_type' => null,
             'discount_value' => null,
+            'discount_value_usd' => null,
         ]);
     }
 }

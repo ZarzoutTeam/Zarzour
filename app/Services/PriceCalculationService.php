@@ -41,8 +41,15 @@ class PriceCalculationService
      *     coupon: array{
      *         id: int,
      *         code: string,
+     *         type: string,
+     *         configured_value: float,
+     *         configured_value_usd: float|null,
+     *         configured_values: array{SYP: float, USD: float|null}|null,
      *         discount_amount: float,
      *         max_discount_amount: float|null,
+     *         max_discount_amount_usd: float|null,
+     *         min_order_amount: float|null,
+     *         min_order_amount_usd: float|null,
      *         usage_limit: int|null,
      *         used_count: int,
      *         remaining_uses: int|null,
@@ -218,9 +225,27 @@ class PriceCalculationService
             'coupon' => $coupon ? [
                 'id' => $coupon->id,
                 'code' => $coupon->code,
+                'type' => $coupon->type,
+                'configured_value' => (float) $coupon->value,
+                'configured_value_usd' => $coupon->value_usd !== null
+                    ? (float) $coupon->value_usd
+                    : null,
+                'configured_values' => $coupon->type === 'fixed' ? [
+                    'SYP' => (float) $coupon->value,
+                    'USD' => $coupon->value_usd !== null ? (float) $coupon->value_usd : null,
+                ] : null,
                 'discount_amount' => $couponDiscountTotal,
                 'max_discount_amount' => $coupon->max_discount_amount !== null
                     ? (float) $coupon->max_discount_amount
+                    : null,
+                'max_discount_amount_usd' => $coupon->max_discount_amount_usd !== null
+                    ? (float) $coupon->max_discount_amount_usd
+                    : null,
+                'min_order_amount' => $coupon->min_order_amount !== null
+                    ? (float) $coupon->min_order_amount
+                    : null,
+                'min_order_amount_usd' => $coupon->min_order_amount_usd !== null
+                    ? (float) $coupon->min_order_amount_usd
                     : null,
                 'usage_limit' => $coupon->usage_limit,
                 'used_count' => $coupon->used_count,

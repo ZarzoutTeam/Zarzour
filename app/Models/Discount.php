@@ -15,6 +15,7 @@ class Discount extends Model
         'product_id',
         'type',
         'value',
+        'value_usd',
         'starts_at',
         'ends_at',
         'is_active',
@@ -24,6 +25,7 @@ class Discount extends Model
     {
         return [
             'value' => 'decimal:2',
+            'value_usd' => 'decimal:2',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'is_active' => 'boolean',

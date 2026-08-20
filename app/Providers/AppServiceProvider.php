@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Banner;
 use App\Models\Category;
+use App\Models\Coupon;
 use App\Models\Discount;
 use App\Models\HomepageSetting;
 use App\Models\Offer;
@@ -13,6 +14,7 @@ use App\Models\Product;
 use App\Models\Province;
 use App\Observers\BannerObserver;
 use App\Observers\CategoryObserver;
+use App\Observers\CouponObserver;
 use App\Observers\DiscountObserver;
 use App\Observers\HomepageSettingObserver;
 use App\Observers\OfferObserver;
@@ -50,6 +52,7 @@ class AppServiceProvider extends ServiceProvider
         Order::observe(OrderObserver::class);
         OrderItem::observe(OrderItemObserver::class);
         Category::observe(CategoryObserver::class);
+        Coupon::observe(CouponObserver::class);
         Banner::observe(BannerObserver::class);
         Product::observe(ProductObserver::class);
         Media::observe(ProductMediaObserver::class);

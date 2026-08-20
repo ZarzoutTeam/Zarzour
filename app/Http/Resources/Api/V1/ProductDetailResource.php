@@ -51,6 +51,13 @@ class ProductDetailResource extends JsonResource
                 'id' => $discount->id,
                 'type' => $discount->type,
                 'value' => (float) $discount->value,
+                'value_usd' => $discount->type === 'fixed' && $discount->value_usd !== null
+                    ? (float) $discount->value_usd
+                    : null,
+                'values' => $discount->type === 'fixed' ? [
+                    'SYP' => (float) $discount->value,
+                    'USD' => $discount->value_usd !== null ? (float) $discount->value_usd : null,
+                ] : null,
                 'starts_at' => $discount->starts_at,
                 'ends_at' => $discount->ends_at,
             ])),
@@ -79,6 +86,13 @@ class ProductDetailResource extends JsonResource
             'type' => $offer->type,
             'discount_type' => $offer->discount_type,
             'discount_value' => $offer->discount_value !== null ? (float) $offer->discount_value : null,
+            'discount_value_usd' => $offer->discount_type === 'fixed' && $offer->discount_value_usd !== null
+                ? (float) $offer->discount_value_usd
+                : null,
+            'discount_values' => $offer->discount_type === 'fixed' ? [
+                'SYP' => (float) $offer->discount_value,
+                'USD' => $offer->discount_value_usd !== null ? (float) $offer->discount_value_usd : null,
+            ] : null,
             'gift' => $giftProduct ? [
                 'product_id' => $giftProduct->id,
                 'name' => $giftProduct->name,

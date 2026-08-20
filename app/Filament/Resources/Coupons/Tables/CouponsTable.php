@@ -34,11 +34,22 @@ class CouponsTable
                     ->label('طريقة الخصم')
                     ->formatStateUsing(fn (string $state): string => $state === 'percentage' ? 'نسبة مئوية' : 'مبلغ ثابت'),
                 TextColumn::make('value')
-                    ->label('قيمة الخصم')
+                    ->label('النسبة / القيمة بالليرة')
                     ->numeric(2)
                     ->suffix(fn (Coupon $record): string => $record->type === 'percentage' ? '%' : ' ل.س'),
+                TextColumn::make('value_usd')
+                    ->label('القيمة الأساسية ($)')
+                    ->numeric(2)
+                    ->suffix(' دولار')
+                    ->placeholder('—'),
+                TextColumn::make('max_discount_amount_usd')
+                    ->label('سقف الخصم ($)')
+                    ->numeric(2)
+                    ->suffix(' دولار')
+                    ->placeholder('—')
+                    ->toggleable(),
                 TextColumn::make('max_discount_amount')
-                    ->label('سقف الخصم')
+                    ->label('سقف الخصم (ل.س)')
                     ->numeric(2)
                     ->suffix(' ل.س')
                     ->placeholder('—')

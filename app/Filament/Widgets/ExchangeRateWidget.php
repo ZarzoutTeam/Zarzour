@@ -79,7 +79,7 @@ class ExchangeRateWidget extends Widget implements HasForms
 
         Notification::make()
             ->title('تم تحديث سعر الصرف')
-            ->body('أُعيد حساب أسعار المنتجات بالليرة السورية وفق السعر الجديد.')
+            ->body('أُعيد حساب أسعار المنتجات والخصومات والقسائم والعروض وأجور الشحن بالليرة السورية.')
             ->success()
             ->send();
     }

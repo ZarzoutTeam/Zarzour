@@ -17,6 +17,7 @@ class Offer extends Model
         'type',
         'discount_type',
         'discount_value',
+        'discount_value_usd',
         'starts_at',
         'ends_at',
         'is_active',
@@ -26,6 +27,7 @@ class Offer extends Model
     {
         return [
             'discount_value' => 'decimal:2',
+            'discount_value_usd' => 'decimal:2',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'is_active' => 'boolean',

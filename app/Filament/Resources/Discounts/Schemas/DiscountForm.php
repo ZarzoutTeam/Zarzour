@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\Discounts\Schemas;
 
+use App\Filament\Support\UsdPricing;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class DiscountForm
@@ -36,18 +38,39 @@ class DiscountForm
                             ->placeholder('اختر طريقة الخصم')
                             ->helperText('النسبة تُحسب من سعر المنتج، والمبلغ الثابت يُخصم مباشرة من السعر.')
                             ->required()
-                            ->live(),
+                            ->live()
+                            ->afterStateUpdated(function (Set $set, ?string $state): void {
+                                if ($state === 'percentage') {
+                                    $set('value_usd', null);
+                                } else {
+                                    $set('value', null);
+                                }
+                            }),
+                        TextInput::make('value_usd')
+                            ->label('قيمة الخصم بالدولار')
+                            ->helperText('هذا هو المبلغ الأساسي للخصم الثابت، ويُحوّل إلى الليرة تلقائياً.')
+                            ->suffix('دولار')
+                            ->visible(fn (Get $get): bool => $get('type') === 'fixed')
+                            ->required(fn (Get $get): bool => $get('type') === 'fixed')
+                            ->numeric()
+                            ->minValue(0.01)
+                            ->step(0.01)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('value', UsdPricing::convertToSyp($state)))
+                            ->rules([UsdPricing::exchangeRateConfiguredRule()]),
                         TextInput::make('value')
-                            ->label('قيمة الخصم')
-                            ->helperText('أدخل رقماً فقط؛ تُفسر القيمة حسب طريقة الاحتساب المحددة.')
+                            ->label(fn (Get $get): string => $get('type') === 'fixed' ? 'الخصم المحسوب بالليرة' : 'نسبة الخصم')
+                            ->helperText(fn (Get $get): string => $get('type') === 'fixed' ? UsdPricing::sypHelperText() : 'أدخل نسبة الخصم من سعر المنتج.')
                             ->suffix(fn (Get $get): string => $get('type') === 'percentage' ? '%' : 'ل.س')
-                            ->required()
+                            ->required(fn (Get $get): bool => $get('type') === 'percentage')
                             ->numeric()
                             ->minValue(0.01)
                             ->maxValue(fn (Get $get): ?float => $get('type') === 'percentage' ? 100.0 : null)
-                            ->step(0.01),
+                            ->step(0.01)
+                            ->disabled(fn (Get $get): bool => $get('type') === 'fixed')
+                            ->dehydrated(fn (Get $get): bool => $get('type') === 'percentage'),
                     ])
-                    ->columns(3)
+                    ->columns(4)
                     ->columnSpanFull(),
                 Section::make('مدة الخصم وحالته')
                     ->description('يمكن ترك التواريخ فارغة ليبقى الخصم فعالاً دون مدة محددة.')

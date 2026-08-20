@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Coupons\Schemas;
 
+use App\Filament\Support\UsdPricing;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -40,29 +41,58 @@ class CouponForm
                             ->required()
                             ->live()
                             ->afterStateUpdated(function (Set $set, ?string $state): void {
-                                if ($state !== 'percentage') {
+                                if ($state === 'percentage') {
+                                    $set('value_usd', null);
+                                } else {
+                                    $set('value', null);
                                     $set('max_discount_amount', null);
+                                    $set('max_discount_amount_usd', null);
                                 }
                             }),
-                        TextInput::make('value')
-                            ->label('قيمة الخصم')
-                            ->helperText('أدخل رقماً فقط؛ تُفسر القيمة حسب طريقة الاحتساب المحددة.')
-                            ->suffix(fn (Get $get): string => $get('type') === 'percentage' ? '%' : 'ل.س')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0.01)
-                            ->maxValue(fn (Get $get): ?float => $get('type') === 'percentage' ? 100.0 : null)
-                            ->step(0.01),
-                        TextInput::make('max_discount_amount')
-                            ->label('الحد الأقصى لقيمة الخصم')
-                            ->helperText('اختياري؛ مهما بلغت قيمة النسبة لن يتجاوز الخصم هذا المبلغ. اتركه فارغاً دون سقف.')
+                        TextInput::make('value_usd')
+                            ->label('قيمة الخصم بالدولار')
+                            ->helperText('المصدر الأساسي للقسيمة ذات المبلغ الثابت.')
+                            ->suffix('دولار')
+                            ->required(fn (Get $get): bool => $get('type') === 'fixed')
+                            ->visible(fn (Get $get): bool => $get('type') === 'fixed')
                             ->numeric()
                             ->minValue(0.01)
                             ->step(0.01)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('value', UsdPricing::convertToSyp($state)))
+                            ->rules([UsdPricing::exchangeRateConfiguredRule()]),
+                        TextInput::make('value')
+                            ->label(fn (Get $get): string => $get('type') === 'fixed' ? 'الخصم المحسوب بالليرة' : 'نسبة الخصم')
+                            ->helperText(fn (Get $get): string => $get('type') === 'fixed' ? UsdPricing::sypHelperText() : 'أدخل نسبة الخصم من قيمة الطلب.')
+                            ->suffix(fn (Get $get): string => $get('type') === 'percentage' ? '%' : 'ل.س')
+                            ->required(fn (Get $get): bool => $get('type') === 'percentage')
+                            ->numeric()
+                            ->minValue(0.01)
+                            ->maxValue(fn (Get $get): ?float => $get('type') === 'percentage' ? 100.0 : null)
+                            ->step(0.01)
+                            ->disabled(fn (Get $get): bool => $get('type') === 'fixed')
+                            ->dehydrated(fn (Get $get): bool => $get('type') === 'percentage'),
+                        TextInput::make('max_discount_amount_usd')
+                            ->label('سقف الخصم بالدولار')
+                            ->helperText('اختياري للقسيمة المئوية؛ اتركه فارغاً دون سقف.')
+                            ->numeric()
+                            ->minValue(0.01)
+                            ->step(0.01)
+                            ->suffix('دولار')
+                            ->visible(fn (Get $get): bool => $get('type') === 'percentage')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('max_discount_amount', UsdPricing::convertToSyp($state)))
+                            ->rules([UsdPricing::exchangeRateConfiguredRule()]),
+                        TextInput::make('max_discount_amount')
+                            ->label('سقف الخصم المحسوب بالليرة')
+                            ->helperText(UsdPricing::sypHelperText())
+                            ->numeric()
                             ->suffix('ل.س')
-                            ->visible(fn (Get $get): bool => $get('type') === 'percentage'),
+                            ->visible(fn (Get $get): bool => $get('type') === 'percentage')
+                            ->disabled()
+                            ->dehydrated(false),
                     ])
-                    ->columns(4)
+                    ->columns(5)
                     ->columnSpanFull(),
                 Section::make('المستفيد وشروط الاستخدام')
                     ->description('حدد من يستطيع استخدام القسيمة والحد الأدنى المطلوب للطلب.')
@@ -91,15 +121,25 @@ class CouponForm
                             ->maxLength(10)
                             ->required(fn (Get $get) => $get('scope') === 'user')
                             ->visible(fn (Get $get) => $get('scope') === 'user'),
-                        TextInput::make('min_order_amount')
-                            ->label('الحد الأدنى لقيمة الطلب')
-                            ->helperText('اتركه فارغاً لتعمل القسيمة مهما كانت قيمة الطلب.')
+                        TextInput::make('min_order_amount_usd')
+                            ->label('الحد الأدنى للطلب بالدولار')
+                            ->helperText('اختياري؛ اتركه فارغاً لتعمل القسيمة مهما كانت قيمة الطلب.')
                             ->numeric()
                             ->minValue(0)
                             ->step(0.01)
+                            ->suffix('دولار')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('min_order_amount', UsdPricing::convertToSyp($state)))
+                            ->rules([UsdPricing::exchangeRateConfiguredRule()]),
+                        TextInput::make('min_order_amount')
+                            ->label('الحد الأدنى المحسوب بالليرة')
+                            ->helperText(UsdPricing::sypHelperText())
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated(false)
                             ->suffix('ل.س'),
                     ])
-                    ->columns(3)
+                    ->columns(4)
                     ->columnSpanFull(),
                 Section::make('مدة القسيمة وحدودها')
                     ->description('تحكم بعدد مرات الاستخدام وتاريخ انتهاء صلاحية القسيمة.')

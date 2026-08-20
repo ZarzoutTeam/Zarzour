@@ -18,6 +18,10 @@ class ProvinceResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'shipping_fee' => (float) $this->shipping_fee,
+            'shipping_fees' => [
+                'SYP' => (float) $this->shipping_fee,
+                'USD' => $this->shipping_fee_usd !== null ? (float) $this->shipping_fee_usd : null,
+            ],
         ];
     }
 }

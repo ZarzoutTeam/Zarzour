@@ -14,6 +14,7 @@ class Province extends Model
     protected $fillable = [
         'name',
         'shipping_fee',
+        'shipping_fee_usd',
         'is_active',
     ];
 
@@ -21,6 +22,7 @@ class Province extends Model
     {
         return [
             'shipping_fee' => 'decimal:2',
+            'shipping_fee_usd' => 'decimal:2',
             'is_active' => 'boolean',
         ];
     }
