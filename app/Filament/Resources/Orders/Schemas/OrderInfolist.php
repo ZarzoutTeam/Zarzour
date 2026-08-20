@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Enums\OrderStatus;
+use App\Models\Order;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -84,6 +85,10 @@ class OrderInfolist
                     ->description('تفصيل المبلغ النهائي بعد الخصومات ورسوم الشحن.')
                     ->schema([
                         Grid::make(4)->schema([
+                            TextEntry::make('payable_total')
+                                ->label('المبلغ المطلوب تحصيله')
+                                ->numeric(2)
+                                ->suffix(fn (Order $record): string => $record->currency === 'USD' ? ' دولار' : ' ل.س'),
                             TextEntry::make('subtotal')->label('المجموع الفرعي')->numeric(2)->suffix(' ل.س'),
                             TextEntry::make('subtotal_usd')->label('المجموع الفرعي بالدولار')->numeric(2)->suffix(' دولار')->placeholder('—'),
                             TextEntry::make('discount_amount')->label('قيمة الخصم')->numeric(2)->suffix(' ل.س'),

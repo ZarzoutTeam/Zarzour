@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -74,6 +75,14 @@ class Order extends Model
             'exchange_rate_snapshot' => 'decimal:2',
             'reserved_until' => 'datetime',
         ];
+    }
+
+    protected function payableTotal(): Attribute
+    {
+        return Attribute::get(fn (): ?float => match ($this->currency) {
+            'USD' => $this->total_usd !== null ? (float) $this->total_usd : null,
+            default => $this->total !== null ? (float) $this->total : null,
+        });
     }
 
     public static function isValidStatusTransition(string $from, string $to): bool

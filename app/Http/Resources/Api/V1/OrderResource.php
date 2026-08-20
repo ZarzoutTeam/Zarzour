@@ -33,6 +33,20 @@ class OrderResource extends JsonResource
                 'shipping_fee' => $this->dualAmount($this->shipping_fee, $this->shipping_fee_usd),
                 'total' => $this->dualAmount($this->total, $this->total_usd),
             ],
+            'payment' => [
+                'currency' => $this->currency,
+                'subtotal' => $this->paymentAmount($this->subtotal, $this->subtotal_usd),
+                'discount_amount' => $this->paymentAmount($this->discount_amount, $this->discount_amount_usd),
+                'coupon_discount_amount' => $this->paymentAmount($this->coupon_discount_amount, $this->coupon_discount_amount_usd),
+                'total_before_shipping' => $this->paymentAmount(
+                    (float) $this->total - (float) $this->shipping_fee,
+                    $this->total_usd !== null && $this->shipping_fee_usd !== null
+                        ? (float) $this->total_usd - (float) $this->shipping_fee_usd
+                        : null,
+                ),
+                'shipping_fee' => $this->paymentAmount($this->shipping_fee, $this->shipping_fee_usd),
+                'total' => $this->paymentAmount($this->total, $this->total_usd),
+            ],
             'subtotal' => (float) $this->subtotal,
             'discount_amount' => (float) $this->discount_amount,
             'coupon_discount_amount' => $this->coupon_discount_amount !== null
@@ -58,5 +72,12 @@ class OrderResource extends JsonResource
             'SYP' => $syp !== null ? (float) $syp : null,
             'USD' => $usd !== null ? (float) $usd : null,
         ];
+    }
+
+    private function paymentAmount(mixed $syp, mixed $usd): ?float
+    {
+        $amount = $this->currency === 'USD' ? $usd : $syp;
+
+        return $amount !== null ? (float) $amount : null;
     }
 }

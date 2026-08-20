@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders\Tables;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Actions\ChangeOrderStatusAction;
+use App\Models\Order;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
@@ -30,6 +31,14 @@ class OrdersTable
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => OrderStatus::from($state)->getLabel())
                     ->color(fn (string $state): string => OrderStatus::from($state)->getColor()),
+                TextColumn::make('currency')
+                    ->label('عملة الدفع')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => $state === 'USD' ? 'دولار' : 'ليرة سورية'),
+                TextColumn::make('payable_total')
+                    ->label('المبلغ المطلوب تحصيله')
+                    ->numeric(2)
+                    ->suffix(fn (Order $record): string => $record->currency === 'USD' ? ' دولار' : ' ل.س'),
                 TextColumn::make('total')
                     ->label('الإجمالي (ل.س)')
                     ->numeric(2)

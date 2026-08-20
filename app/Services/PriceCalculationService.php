@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Province;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Single source of truth for cart/order pricing. Applies, in this fixed order,
@@ -34,6 +35,7 @@ class PriceCalculationService
      * @return array{
      *     currency: string,
      *     exchange_rate: array{base_currency: string, quote_currency: string, rate: float}|null,
+     *     payment: array<string, mixed>,
      *     amounts: array<string, array{SYP: float|null, USD: float|null}>,
      *     subtotal: float,
      *     discount_amount: float,
@@ -83,6 +85,7 @@ class PriceCalculationService
         ?string $couponCode = null,
         ?string $phoneNumber = null,
         ?int $provinceId = null,
+        string $paymentCurrency = 'SYP',
         bool $lockForUpdate = false,
     ): array
     {
@@ -227,6 +230,20 @@ class PriceCalculationService
             $rate = null;
         }
 
+        $paymentCurrency = strtoupper(trim($paymentCurrency));
+
+        if (! in_array($paymentCurrency, ['SYP', 'USD'], true)) {
+            throw ValidationException::withMessages([
+                'currency' => ['العملة يجب أن تكون SYP أو USD.'],
+            ]);
+        }
+
+        if ($paymentCurrency === 'USD' && $rate === null) {
+            throw ValidationException::withMessages([
+                'currency' => ['لا يمكن الدفع بالدولار قبل تحديد سعر الصرف من لوحة التحكم.'],
+            ]);
+        }
+
         foreach ($result as &$pricedLine) {
             $pricedLine['amounts'] = [
                 'unit_price' => $this->dualAmount($pricedLine['unit_price'], $rate),
@@ -240,7 +257,7 @@ class PriceCalculationService
         unset($pricedLine);
 
         return [
-            'currency' => 'SYP',
+            'currency' => $paymentCurrency,
             'exchange_rate' => $rate !== null ? [
                 'base_currency' => 'USD',
                 'quote_currency' => 'SYP',
@@ -252,6 +269,15 @@ class PriceCalculationService
                 'total_before_shipping' => $this->dualAmount($total, $rate),
                 'shipping_fee' => $this->dualAmount($shippingFee, $rate),
                 'grand_total' => $this->dualAmount($grandTotal, $rate),
+            ],
+            'payment' => [
+                'currency' => $paymentCurrency,
+                'subtotal' => $this->paymentAmount($subtotal, $rate, $paymentCurrency),
+                'discount_amount' => $this->paymentAmount($discountAmount, $rate, $paymentCurrency),
+                'coupon_discount_amount' => $this->paymentAmount($couponDiscountTotal, $rate, $paymentCurrency),
+                'total_before_shipping' => $this->paymentAmount($total, $rate, $paymentCurrency),
+                'shipping_fee' => $this->paymentAmount($shippingFee, $rate, $paymentCurrency),
+                'total' => $this->paymentAmount($grandTotal, $rate, $paymentCurrency),
             ],
             'subtotal' => $subtotal,
             'discount_amount' => $discountAmount,
@@ -493,5 +519,16 @@ class PriceCalculationService
                 ? $this->money($sypAmount / $rate)
                 : null,
         ];
+    }
+
+    private function paymentAmount(?float $sypAmount, ?float $rate, string $currency): ?float
+    {
+        if ($sypAmount === null) {
+            return null;
+        }
+
+        return $currency === 'USD'
+            ? $this->money($sypAmount / (float) $rate)
+            : $sypAmount;
     }
 }

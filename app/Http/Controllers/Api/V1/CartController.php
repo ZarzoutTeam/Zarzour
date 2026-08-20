@@ -29,6 +29,7 @@ class CartController extends Controller
             $data['coupon_code'] ?? null,
             $data['phone_number'] ?? null,
             $data['province_id'] ?? null,
+            $data['currency'] ?? 'SYP',
         );
 
         return $this->success($result);

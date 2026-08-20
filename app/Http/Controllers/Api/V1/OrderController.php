@@ -46,6 +46,7 @@ class OrderController extends Controller
                 $data['coupon_code'] ?? null,
                 $data['phone_number'],
                 $data['province_id'],
+                $data['currency'] ?? 'SYP',
                 lockForUpdate: true,
             );
 
@@ -78,7 +79,7 @@ class OrderController extends Controller
                 'coupon_id' => $pricing['coupon']['id'] ?? null,
                 'applied_offer_id' => $primaryOfferId,
                 'payment_method' => $data['payment_method'],
-                'currency' => 'SYP',
+                'currency' => $pricing['payment']['currency'],
                 'exchange_rate_snapshot' => $pricing['exchange_rate']['rate'] ?? null,
                 'status' => 'pending',
             ]);
@@ -153,6 +154,7 @@ class OrderController extends Controller
             'order_id' => $order->id,
             'status' => $order->status,
             'currency' => $order->currency,
+            'payment' => $pricing['payment'],
             'exchange_rate' => $order->exchange_rate_snapshot !== null ? [
                 'base_currency' => 'USD',
                 'quote_currency' => 'SYP',

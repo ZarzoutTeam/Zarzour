@@ -61,13 +61,19 @@ class InvoiceDualCurrencyTest extends TestCase
             'province_id' => $province->id,
             'shipping_address' => 'Damascus',
             'payment_method' => 'cod',
+            'currency' => 'usd',
             'coupon_code' => 'INVOICE2',
             'lines' => [['product_id' => $product->id, 'quantity' => 1]],
         ]);
 
         $response
             ->assertCreated()
-            ->assertJsonPath('data.currency', 'SYP')
+            ->assertJsonPath('data.currency', 'USD')
+            ->assertJsonPath('data.payment.currency', 'USD')
+            ->assertJsonPath('data.payment.subtotal', 10)
+            ->assertJsonPath('data.payment.discount_amount', 3.5)
+            ->assertJsonPath('data.payment.shipping_fee', 1.5)
+            ->assertJsonPath('data.payment.total', 8)
             ->assertJsonPath('data.exchange_rate.rate', 10000)
             ->assertJsonPath('data.amounts.subtotal.SYP', 100000)
             ->assertJsonPath('data.amounts.subtotal.USD', 10)
@@ -87,6 +93,7 @@ class InvoiceDualCurrencyTest extends TestCase
         $item = OrderItem::query()->where('order_id', $order->id)->firstOrFail();
 
         $this->assertSame(10000.0, (float) $order->exchange_rate_snapshot);
+        $this->assertSame('USD', $order->currency);
         $this->assertSame(10.0, (float) $order->subtotal_usd);
         $this->assertSame(3.5, (float) $order->discount_amount_usd);
         $this->assertSame(2.0, (float) $order->coupon_discount_amount_usd);
@@ -94,6 +101,13 @@ class InvoiceDualCurrencyTest extends TestCase
         $this->assertSame(8.0, (float) $order->total_usd);
         $this->assertSame(10.0, (float) $item->unit_price_snapshot_usd);
         $this->assertSame(6.5, (float) $item->line_total_usd);
+
+        $order->load(['items', 'province', 'coupon']);
+        $invoice = (new OrderResource($order))->resolve();
+
+        $this->assertSame('USD', $invoice['payment']['currency']);
+        $this->assertSame(6.5, $invoice['payment']['total_before_shipping']);
+        $this->assertSame(8.0, $invoice['payment']['total']);
     }
 
     public function test_invoice_usd_snapshot_does_not_change_when_the_store_rate_changes(): void
@@ -123,6 +137,11 @@ class InvoiceDualCurrencyTest extends TestCase
             'lines' => [['product_id' => $product->id, 'quantity' => 1]],
         ])->assertCreated();
 
+        $response
+            ->assertJsonPath('data.currency', 'SYP')
+            ->assertJsonPath('data.payment.currency', 'SYP')
+            ->assertJsonPath('data.payment.total', 110000);
+
         $order = Order::findOrFail($response->json('data.order_id'));
         $settings->update(['usd_to_syp_rate' => 20000]);
 
@@ -133,6 +152,8 @@ class InvoiceDualCurrencyTest extends TestCase
         $this->assertSame(11.0, (float) $order->total_usd);
         $this->assertSame(110000.0, (float) $order->total);
         $this->assertSame(10000.0, $invoice['exchange_rate']['rate']);
+        $this->assertSame('SYP', $invoice['payment']['currency']);
+        $this->assertSame(110000.0, $invoice['payment']['total']);
         $this->assertSame(11.0, $invoice['amounts']['total']['USD']);
         $this->assertSame(110000.0, $invoice['amounts']['total']['SYP']);
         $this->assertSame(10.0, $invoice['items']->resolve()[0]['amounts']['unit_price']['USD']);

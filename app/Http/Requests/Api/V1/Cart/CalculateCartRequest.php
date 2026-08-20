@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api\V1\Cart;
 
 use App\Rules\ActiveProvinceExists;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CalculateCartRequest extends FormRequest
 {
@@ -16,11 +17,18 @@ class CalculateCartRequest extends FormRequest
     {
         $couponCode = $this->input('coupon_code');
         $phoneNumber = $this->input('phone_number');
+        $currency = $this->input('currency');
 
-        $this->merge([
+        $normalized = [
             'coupon_code' => is_string($couponCode) ? strtoupper(trim($couponCode)) : $couponCode,
             'phone_number' => is_string($phoneNumber) ? trim($phoneNumber) : $phoneNumber,
-        ]);
+        ];
+
+        if ($this->has('currency')) {
+            $normalized['currency'] = is_string($currency) ? strtoupper(trim($currency)) : $currency;
+        }
+
+        $this->merge($normalized);
     }
 
     /**
@@ -35,6 +43,7 @@ class CalculateCartRequest extends FormRequest
             'coupon_code' => ['nullable', 'string', 'max:255'],
             'phone_number' => ['nullable', 'string', 'regex:/^09[0-9]{8}$/'],
             'province_id' => ['nullable', 'integer', new ActiveProvinceExists],
+            'currency' => ['sometimes', 'string', Rule::in(['SYP', 'USD'])],
         ];
     }
 }

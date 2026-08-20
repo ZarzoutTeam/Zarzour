@@ -18,11 +18,18 @@ class StoreOrderRequest extends FormRequest
     {
         $couponCode = $this->input('coupon_code');
         $phoneNumber = $this->input('phone_number');
+        $currency = $this->input('currency');
 
-        $this->merge([
+        $normalized = [
             'coupon_code' => is_string($couponCode) ? strtoupper(trim($couponCode)) : $couponCode,
             'phone_number' => is_string($phoneNumber) ? trim($phoneNumber) : $phoneNumber,
-        ]);
+        ];
+
+        if ($this->has('currency')) {
+            $normalized['currency'] = is_string($currency) ? strtoupper(trim($currency)) : $currency;
+        }
+
+        $this->merge($normalized);
     }
 
     /**
@@ -37,6 +44,7 @@ class StoreOrderRequest extends FormRequest
             'shipping_address' => ['required', 'string'],
             'extra_notes' => ['nullable', 'string'],
             'payment_method' => ['required', Rule::in(HomepageSetting::enabledPaymentMethodKeys())],
+            'currency' => ['sometimes', 'string', Rule::in(['SYP', 'USD'])],
             'coupon_code' => ['nullable', 'string', 'max:255'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.product_id' => ['required', 'integer', 'distinct', 'exists:products,id'],
