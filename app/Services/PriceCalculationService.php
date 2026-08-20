@@ -27,10 +27,14 @@ use Illuminate\Support\Carbon;
  */
 class PriceCalculationService
 {
+    public function __construct(private readonly ExchangeRateService $exchangeRateService) {}
+
     /**
      * @param  array<int, array{product_id: int, quantity: int}>  $lines
      * @return array{
      *     currency: string,
+     *     exchange_rate: array{base_currency: string, quote_currency: string, rate: float}|null,
+     *     amounts: array<string, array{SYP: float|null, USD: float|null}>,
      *     subtotal: float,
      *     discount_amount: float,
      *     total_before_shipping: float,
@@ -46,6 +50,7 @@ class PriceCalculationService
      *         configured_value_usd: float|null,
      *         configured_values: array{SYP: float, USD: float|null}|null,
      *         discount_amount: float,
+     *         discount_amounts: array{SYP: float|null, USD: float|null},
      *         max_discount_amount: float|null,
      *         max_discount_amount_usd: float|null,
      *         min_order_amount: float|null,
@@ -69,6 +74,7 @@ class PriceCalculationService
      *         offer_id: int|null,
      *         offer_applied: bool,
      *         gift: array{product_id: int, name: string, offer_id: int}|null,
+     *         amounts: array<string, array{SYP: float|null, USD: float|null}>,
      *     }>,
      * }
      */
@@ -213,14 +219,46 @@ class PriceCalculationService
             $shippingFee = (float) Province::findOrFail($provinceId)->shipping_fee;
         }
 
+        $discountAmount = $this->money($subtotal - $total);
+        $grandTotal = $this->money($total + ($shippingFee ?? 0));
+        $rate = $this->exchangeRateService->currentUsdToSypRate();
+
+        if ($rate !== null && $rate <= 0) {
+            $rate = null;
+        }
+
+        foreach ($result as &$pricedLine) {
+            $pricedLine['amounts'] = [
+                'unit_price' => $this->dualAmount($pricedLine['unit_price'], $rate),
+                'original_line_total' => $this->dualAmount($pricedLine['original_line_total'], $rate),
+                'direct_discount_amount' => $this->dualAmount($pricedLine['direct_discount_amount'], $rate),
+                'coupon_discount_amount' => $this->dualAmount($pricedLine['coupon_discount_amount'], $rate),
+                'offer_discount_amount' => $this->dualAmount($pricedLine['offer_discount_amount'], $rate),
+                'final_line_total' => $this->dualAmount($pricedLine['final_line_total'], $rate),
+            ];
+        }
+        unset($pricedLine);
+
         return [
             'currency' => 'SYP',
+            'exchange_rate' => $rate !== null ? [
+                'base_currency' => 'USD',
+                'quote_currency' => 'SYP',
+                'rate' => $rate,
+            ] : null,
+            'amounts' => [
+                'subtotal' => $this->dualAmount($subtotal, $rate),
+                'discount_amount' => $this->dualAmount($discountAmount, $rate),
+                'total_before_shipping' => $this->dualAmount($total, $rate),
+                'shipping_fee' => $this->dualAmount($shippingFee, $rate),
+                'grand_total' => $this->dualAmount($grandTotal, $rate),
+            ],
             'subtotal' => $subtotal,
-            'discount_amount' => $this->money($subtotal - $total),
+            'discount_amount' => $discountAmount,
             'total_before_shipping' => $total,
             'shipping_fee' => $shippingFee,
             'shipping_required' => $shippingFee === null,
-            'grand_total' => $this->money($total + ($shippingFee ?? 0)),
+            'grand_total' => $grandTotal,
             'is_final_total' => $shippingFee !== null,
             'coupon' => $coupon ? [
                 'id' => $coupon->id,
@@ -235,6 +273,7 @@ class PriceCalculationService
                     'USD' => $coupon->value_usd !== null ? (float) $coupon->value_usd : null,
                 ] : null,
                 'discount_amount' => $couponDiscountTotal,
+                'discount_amounts' => $this->dualAmount($couponDiscountTotal, $rate),
                 'max_discount_amount' => $coupon->max_discount_amount !== null
                     ? (float) $coupon->max_discount_amount
                     : null,
@@ -441,5 +480,18 @@ class PriceCalculationService
     private function money(float $amount): float
     {
         return round($amount, 2);
+    }
+
+    /**
+     * @return array{SYP: float|null, USD: float|null}
+     */
+    private function dualAmount(?float $sypAmount, ?float $rate): array
+    {
+        return [
+            'SYP' => $sypAmount,
+            'USD' => $sypAmount !== null && $rate !== null && $rate > 0
+                ? $this->money($sypAmount / $rate)
+                : null,
+        ];
     }
 }

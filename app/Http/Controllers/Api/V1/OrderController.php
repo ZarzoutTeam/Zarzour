@@ -64,14 +64,22 @@ class OrderController extends Controller
                 'shipping_address' => $data['shipping_address'],
                 'extra_notes' => $data['extra_notes'] ?? null,
                 'subtotal' => $pricing['subtotal'],
+                'subtotal_usd' => $pricing['amounts']['subtotal']['USD'],
                 'discount_amount' => $pricing['discount_amount'],
+                'discount_amount_usd' => $pricing['amounts']['discount_amount']['USD'],
                 'coupon_discount_amount' => $pricing['coupon']['discount_amount'] ?? 0,
+                'coupon_discount_amount_usd' => $pricing['coupon'] !== null
+                    ? $pricing['coupon']['discount_amounts']['USD']
+                    : ($pricing['exchange_rate'] !== null ? 0 : null),
                 'shipping_fee' => $pricing['shipping_fee'],
+                'shipping_fee_usd' => $pricing['amounts']['shipping_fee']['USD'],
                 'total' => $pricing['grand_total'],
+                'total_usd' => $pricing['amounts']['grand_total']['USD'],
                 'coupon_id' => $pricing['coupon']['id'] ?? null,
                 'applied_offer_id' => $primaryOfferId,
                 'payment_method' => $data['payment_method'],
                 'currency' => 'SYP',
+                'exchange_rate_snapshot' => $pricing['exchange_rate']['rate'] ?? null,
                 'status' => 'pending',
             ]);
 
@@ -80,11 +88,16 @@ class OrderController extends Controller
                     'product_id' => $line['product_id'],
                     'product_name_snapshot' => $productNames->get($line['product_id']),
                     'unit_price_snapshot' => $line['unit_price'],
+                    'unit_price_snapshot_usd' => $line['amounts']['unit_price']['USD'],
                     'quantity' => $line['quantity'],
                     'line_total' => $line['final_line_total'],
+                    'line_total_usd' => $line['amounts']['final_line_total']['USD'],
                     'direct_discount_amount' => $line['direct_discount_amount'],
+                    'direct_discount_amount_usd' => $line['amounts']['direct_discount_amount']['USD'],
                     'coupon_discount_amount' => $line['coupon_discount_amount'],
+                    'coupon_discount_amount_usd' => $line['amounts']['coupon_discount_amount']['USD'],
                     'offer_discount_amount' => $line['offer_discount_amount'],
+                    'offer_discount_amount_usd' => $line['amounts']['offer_discount_amount']['USD'],
                     'is_gift' => false,
                     'offer_id' => $line['offer_id'],
                 ]);
@@ -94,11 +107,16 @@ class OrderController extends Controller
                         'product_id' => $line['gift']['product_id'],
                         'product_name_snapshot' => $line['gift']['name'],
                         'unit_price_snapshot' => 0,
+                        'unit_price_snapshot_usd' => $pricing['exchange_rate'] !== null ? 0 : null,
                         'quantity' => 1,
                         'line_total' => 0,
+                        'line_total_usd' => $pricing['exchange_rate'] !== null ? 0 : null,
                         'direct_discount_amount' => 0,
+                        'direct_discount_amount_usd' => $pricing['exchange_rate'] !== null ? 0 : null,
                         'coupon_discount_amount' => 0,
+                        'coupon_discount_amount_usd' => $pricing['exchange_rate'] !== null ? 0 : null,
                         'offer_discount_amount' => 0,
+                        'offer_discount_amount_usd' => $pricing['exchange_rate'] !== null ? 0 : null,
                         'is_gift' => true,
                         'offer_id' => $line['gift']['offer_id'],
                     ]);
@@ -135,6 +153,18 @@ class OrderController extends Controller
             'order_id' => $order->id,
             'status' => $order->status,
             'currency' => $order->currency,
+            'exchange_rate' => $order->exchange_rate_snapshot !== null ? [
+                'base_currency' => 'USD',
+                'quote_currency' => 'SYP',
+                'rate' => (float) $order->exchange_rate_snapshot,
+            ] : null,
+            'amounts' => [
+                'subtotal' => $this->dualAmount($order->subtotal, $order->subtotal_usd),
+                'discount_amount' => $this->dualAmount($order->discount_amount, $order->discount_amount_usd),
+                'coupon_discount_amount' => $this->dualAmount($order->coupon_discount_amount, $order->coupon_discount_amount_usd),
+                'shipping_fee' => $this->dualAmount($order->shipping_fee, $order->shipping_fee_usd),
+                'total' => $this->dualAmount($order->total, $order->total_usd),
+            ],
             'subtotal' => (float) $order->subtotal,
             'discount_amount' => (float) $order->discount_amount,
             'coupon_discount_amount' => (float) $order->coupon_discount_amount,
@@ -150,6 +180,13 @@ class OrderController extends Controller
                 'direct_discount_amount' => (float) $item->direct_discount_amount,
                 'coupon_discount_amount' => (float) $item->coupon_discount_amount,
                 'offer_discount_amount' => (float) $item->offer_discount_amount,
+                'amounts' => [
+                    'unit_price' => $this->dualAmount($item->unit_price_snapshot, $item->unit_price_snapshot_usd),
+                    'line_total' => $this->dualAmount($item->line_total, $item->line_total_usd),
+                    'direct_discount_amount' => $this->dualAmount($item->direct_discount_amount, $item->direct_discount_amount_usd),
+                    'coupon_discount_amount' => $this->dualAmount($item->coupon_discount_amount, $item->coupon_discount_amount_usd),
+                    'offer_discount_amount' => $this->dualAmount($item->offer_discount_amount, $item->offer_discount_amount_usd),
+                ],
                 'offer_id' => $item->offer_id,
                 'is_gift' => $item->is_gift,
             ]),
@@ -200,5 +237,16 @@ class OrderController extends Controller
     private function perPage(Request $request): int
     {
         return min(max($request->integer('per_page', 15), 1), self::MAX_PER_PAGE);
+    }
+
+    /**
+     * @return array{SYP: float|null, USD: float|null}
+     */
+    private function dualAmount(mixed $syp, mixed $usd): array
+    {
+        return [
+            'SYP' => $syp !== null ? (float) $syp : null,
+            'USD' => $usd !== null ? (float) $usd : null,
+        ];
     }
 }

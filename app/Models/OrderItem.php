@@ -15,11 +15,16 @@ class OrderItem extends Model
         'product_id',
         'product_name_snapshot',
         'unit_price_snapshot',
+        'unit_price_snapshot_usd',
         'quantity',
         'line_total',
+        'line_total_usd',
         'direct_discount_amount',
+        'direct_discount_amount_usd',
         'coupon_discount_amount',
+        'coupon_discount_amount_usd',
         'offer_discount_amount',
+        'offer_discount_amount_usd',
         'is_gift',
         'offer_id',
     ];
@@ -28,11 +33,16 @@ class OrderItem extends Model
     {
         return [
             'unit_price_snapshot' => 'decimal:2',
+            'unit_price_snapshot_usd' => 'decimal:2',
             'quantity' => 'integer',
             'line_total' => 'decimal:2',
+            'line_total_usd' => 'decimal:2',
             'direct_discount_amount' => 'decimal:2',
+            'direct_discount_amount_usd' => 'decimal:2',
             'coupon_discount_amount' => 'decimal:2',
+            'coupon_discount_amount_usd' => 'decimal:2',
             'offer_discount_amount' => 'decimal:2',
+            'offer_discount_amount_usd' => 'decimal:2',
             'is_gift' => 'boolean',
         ];
     }

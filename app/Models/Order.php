@@ -40,14 +40,20 @@ class Order extends Model
         'shipping_address',
         'extra_notes',
         'subtotal',
+        'subtotal_usd',
         'discount_amount',
+        'discount_amount_usd',
         'coupon_discount_amount',
+        'coupon_discount_amount_usd',
         'shipping_fee',
+        'shipping_fee_usd',
         'total',
+        'total_usd',
         'coupon_id',
         'applied_offer_id',
         'payment_method',
         'currency',
+        'exchange_rate_snapshot',
         'status',
         'reserved_until',
     ];
@@ -56,10 +62,16 @@ class Order extends Model
     {
         return [
             'subtotal' => 'decimal:2',
+            'subtotal_usd' => 'decimal:2',
             'discount_amount' => 'decimal:2',
+            'discount_amount_usd' => 'decimal:2',
             'coupon_discount_amount' => 'decimal:2',
+            'coupon_discount_amount_usd' => 'decimal:2',
             'shipping_fee' => 'decimal:2',
+            'shipping_fee_usd' => 'decimal:2',
             'total' => 'decimal:2',
+            'total_usd' => 'decimal:2',
+            'exchange_rate_snapshot' => 'decimal:2',
             'reserved_until' => 'datetime',
         ];
     }

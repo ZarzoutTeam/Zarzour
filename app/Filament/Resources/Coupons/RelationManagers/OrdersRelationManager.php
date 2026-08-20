@@ -31,10 +31,15 @@ class OrdersRelationManager extends RelationManager
                     ->label('رقم الهاتف')
                     ->searchable(),
                 TextColumn::make('coupon_discount_amount')
-                    ->label('خصم القسيمة')
+                    ->label('الخصم (ل.س)')
                     ->numeric(2)
                     ->suffix(' ل.س')
                     ->placeholder('غير متوفر للطلبات القديمة'),
+                TextColumn::make('coupon_discount_amount_usd')
+                    ->label('الخصم ($)')
+                    ->numeric(2)
+                    ->suffix(' دولار')
+                    ->placeholder('—'),
                 TextColumn::make('status')
                     ->label('حالة الطلب')
                     ->badge()

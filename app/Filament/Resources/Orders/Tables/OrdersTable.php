@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Orders\Tables;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Actions\ChangeOrderStatusAction;
-use App\Models\Order;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
@@ -32,9 +31,15 @@ class OrdersTable
                     ->formatStateUsing(fn (string $state): string => OrderStatus::from($state)->getLabel())
                     ->color(fn (string $state): string => OrderStatus::from($state)->getColor()),
                 TextColumn::make('total')
-                    ->label('الإجمالي')
+                    ->label('الإجمالي (ل.س)')
                     ->numeric(2)
-                    ->suffix(fn (Order $record): string => $record->currency === 'USD' ? ' دولار' : ' ل.س')
+                    ->suffix(' ل.س')
+                    ->sortable(),
+                TextColumn::make('total_usd')
+                    ->label('الإجمالي ($)')
+                    ->numeric(2)
+                    ->suffix(' دولار')
+                    ->placeholder('—')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('تاريخ الطلب')

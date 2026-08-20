@@ -21,6 +21,7 @@ class SalesOverviewWidget extends StatsOverviewWidget
             ->when($this->rangeStart(), fn ($q, $start) => $q->where('created_at', '>=', $start));
 
         $totalSales = (clone $query)->whereIn('status', Customer::CONFIRMED_STATUSES)->sum('total');
+        $totalSalesUsd = (clone $query)->whereIn('status', Customer::CONFIRMED_STATUSES)->sum('total_usd');
 
         $statusCounts = (clone $query)
             ->selectRaw('status, count(*) as aggregate')
@@ -29,7 +30,7 @@ class SalesOverviewWidget extends StatsOverviewWidget
 
         $stats = [
             Stat::make('إجمالي المبيعات', number_format((float) $totalSales, 2).' ل.س')
-                ->description('مجموع الطلبات المحتسبة كمبيعات ضمن الفترة المحددة')
+                ->description(number_format((float) $totalSalesUsd, 2).' دولار — المتوفر من الفواتير مزدوجة العملة')
                 ->color('success'),
         ];
 

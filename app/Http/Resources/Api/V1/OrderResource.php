@@ -21,6 +21,18 @@ class OrderResource extends JsonResource
             'province' => $this->whenLoaded('province', fn () => $this->province->name),
             'shipping_address' => $this->shipping_address,
             'extra_notes' => $this->extra_notes,
+            'exchange_rate' => $this->exchange_rate_snapshot !== null ? [
+                'base_currency' => 'USD',
+                'quote_currency' => 'SYP',
+                'rate' => (float) $this->exchange_rate_snapshot,
+            ] : null,
+            'amounts' => [
+                'subtotal' => $this->dualAmount($this->subtotal, $this->subtotal_usd),
+                'discount_amount' => $this->dualAmount($this->discount_amount, $this->discount_amount_usd),
+                'coupon_discount_amount' => $this->dualAmount($this->coupon_discount_amount, $this->coupon_discount_amount_usd),
+                'shipping_fee' => $this->dualAmount($this->shipping_fee, $this->shipping_fee_usd),
+                'total' => $this->dualAmount($this->total, $this->total_usd),
+            ],
             'subtotal' => (float) $this->subtotal,
             'discount_amount' => (float) $this->discount_amount,
             'coupon_discount_amount' => $this->coupon_discount_amount !== null
@@ -34,6 +46,17 @@ class OrderResource extends JsonResource
             'coupon_code' => $this->whenLoaded('coupon', fn () => $this->coupon?->code),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
             'created_at' => $this->created_at,
+        ];
+    }
+
+    /**
+     * @return array{SYP: float|null, USD: float|null}
+     */
+    private function dualAmount(mixed $syp, mixed $usd): array
+    {
+        return [
+            'SYP' => $syp !== null ? (float) $syp : null,
+            'USD' => $usd !== null ? (float) $usd : null,
         ];
     }
 }
