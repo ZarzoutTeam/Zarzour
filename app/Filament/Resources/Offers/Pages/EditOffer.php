@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Offers\Pages;
 
 use App\Exceptions\OverlappingOfferException;
+use App\Filament\Resources\Concerns\RedirectsToPreviousListPage;
 use App\Filament\Resources\Offers\OfferResource;
 use App\Models\Offer;
 use Filament\Actions\DeleteAction;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 
 class EditOffer extends EditRecord
 {
+    use RedirectsToPreviousListPage;
+
     protected static string $resource = OfferResource::class;
 
     protected function getHeaderActions(): array

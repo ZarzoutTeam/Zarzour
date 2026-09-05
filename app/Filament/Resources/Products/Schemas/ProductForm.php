@@ -125,7 +125,7 @@ class ProductForm
                         CatalogImageUpload::configure(SpatieMediaLibraryFileUpload::make('images')
                             ->label('صور المنتج')
                             ->collection('images')
-                            ->conversion('medium'))
+                            ->conversion('large'))
                             ->imageEditor()
                             ->imageEditorAspectRatioOptions([
                                 null,

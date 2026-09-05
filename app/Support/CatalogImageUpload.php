@@ -3,6 +3,8 @@
 namespace App\Support;
 
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class CatalogImageUpload
 {
@@ -35,5 +37,49 @@ final class CatalogImageUpload
             ->rules([
                 "dimensions:max_width={$serverMaxDimension},max_height={$serverMaxDimension}",
             ]);
+    }
+
+    /**
+     * @param  list<string>  $orderedUuids
+     */
+    public static function reorderMedia(Model $record, string $collection, array $orderedUuids): void
+    {
+        if (! $record->exists) {
+            return;
+        }
+
+        $orderedUuids = collect($orderedUuids)
+            ->filter(static fn (mixed $uuid): bool => is_string($uuid) && filled($uuid))
+            ->unique(strict: true)
+            ->values()
+            ->all();
+
+        if ($orderedUuids === []) {
+            return;
+        }
+
+        $mediaClass = method_exists($record, 'getMediaModel')
+            ? $record->getMediaModel()
+            : config('media-library.media_model', Media::class);
+        $mediaModel = app($mediaClass);
+
+        $mediaIdsByUuid = $mediaClass::query()
+            ->where('model_type', $record->getMorphClass())
+            ->where('model_id', $record->getKey())
+            ->where('collection_name', $collection)
+            ->whereIn('uuid', $orderedUuids)
+            ->pluck($mediaModel->getKeyName(), 'uuid')
+            ->all();
+
+        $orderedMediaIds = collect($orderedUuids)
+            ->map(static fn (string $uuid): mixed => $mediaIdsByUuid[$uuid] ?? null)
+            ->filter(static fn (mixed $id): bool => $id !== null)
+            ->values()
+            ->all();
+
+        $mediaClass::setNewOrder($orderedMediaIds);
+
+        // Force subsequent consumers to see the persisted order.
+        $record->unsetRelation('media');
     }
 }

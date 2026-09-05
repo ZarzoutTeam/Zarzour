@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Discounts\Pages;
 
 use App\Exceptions\OverlappingDiscountException;
+use App\Filament\Resources\Concerns\RedirectsToPreviousListPage;
 use App\Filament\Resources\Discounts\DiscountResource;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class EditDiscount extends EditRecord
 {
+    use RedirectsToPreviousListPage;
+
     protected static string $resource = DiscountResource::class;
 
     protected function getHeaderActions(): array
