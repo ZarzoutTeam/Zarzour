@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api\V1;
 
 use App\Models\Product;
+use App\Support\OfferPresentation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -26,6 +27,11 @@ class ProductListResource extends JsonResource
             ],
             'available_quantity' => $this->available_quantity,
             'thumbnail' => $this->whenLoaded('primaryImage', fn () => $this->mediaUrl($this->primaryImage, 'thumbnail')),
+            'offer' => $this->whenLoaded('offers', function (): ?array {
+                $offer = $this->offers->first();
+
+                return $offer ? OfferPresentation::payload($offer, $this->resource) : null;
+            }),
             'category' => $this->whenLoaded('category', fn () => [
                 'id' => $this->category->id,
                 'name' => $this->category->name,

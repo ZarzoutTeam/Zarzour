@@ -8,6 +8,7 @@ use App\Models\Offer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Province;
+use App\Support\CatalogMedia;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -75,7 +76,7 @@ class PriceCalculationService
      *         final_line_total: float,
      *         offer_id: int|null,
      *         offer_applied: bool,
-     *         gift: array{product_id: int, name: string, offer_id: int}|null,
+     *         gift: array{product_id: int, name: string, offer_id: int, image: array<string, mixed>|null}|null,
      *         amounts: array<string, array{SYP: float|null, USD: float|null}>,
      *     }>,
      * }
@@ -87,8 +88,7 @@ class PriceCalculationService
         ?int $provinceId = null,
         string $paymentCurrency = 'SYP',
         bool $lockForUpdate = false,
-    ): array
-    {
+    ): array {
         $productIds = array_column($lines, 'product_id');
 
         $productQuery = Product::query()
@@ -97,7 +97,8 @@ class PriceCalculationService
             ->with([
                 'discounts' => fn ($query) => $query->activeNow()->orderByDesc('id'),
                 'offers' => fn ($query) => $query->activeNow()->orderByDesc('id'),
-                'offers.gifts.giftProduct',
+                'offers.media',
+                'offers.gifts.giftProduct.primaryImage',
             ])
             ->orderBy('id');
 
@@ -335,8 +336,7 @@ class PriceCalculationService
         ?string $phoneNumber,
         float $subtotalAfterDirect,
         bool $lockForUpdate,
-    ): array
-    {
+    ): array {
         $couponQuery = Coupon::query()
             ->where('code', strtoupper(trim($code)))
             ->where('is_active', true);
@@ -472,7 +472,7 @@ class PriceCalculationService
      * from a stored/cached flag. If unavailable, a discount-with-gift offer keeps
      * its discount, while a gift-only offer is reported as not applied.
      *
-     * @return array{product_id: int, name: string, offer_id: int}|null
+     * @return array{product_id: int, name: string, offer_id: int, image: array<string, mixed>|null}|null
      */
     private function resolveGift(Offer $offer, bool $lockForUpdate): ?array
     {
@@ -500,6 +500,9 @@ class PriceCalculationService
             'product_id' => $giftProduct->id,
             'name' => $giftProduct->name,
             'offer_id' => $offer->id,
+            'image' => CatalogMedia::imagePayload(
+                $offer->getFirstMedia(Offer::MEDIA_GIFT_IMAGE) ?? $giftProduct->primaryImage,
+            ),
         ];
     }
 

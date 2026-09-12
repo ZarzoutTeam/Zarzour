@@ -64,7 +64,14 @@ class ProductController extends Controller
             ])
             ->defaultSort('-created_at')
             ->where('is_active', true)
-            ->with(['category', 'primaryImage'])
+            ->with([
+                'category',
+                'primaryImage',
+                'offers' => fn ($query) => $query->activeNow()->orderByDesc('id')->with([
+                    'media',
+                    'gifts.giftProduct.primaryImage',
+                ]),
+            ])
             ->paginate($this->perPage($request))
             ->withQueryString();
 
@@ -92,7 +99,10 @@ class ProductController extends Controller
                     ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
                     ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
                     ->orderByDesc('id'),
-                'offers' => fn ($query) => $query->activeNow()->orderByDesc('id')->with('gifts.giftProduct'),
+                'offers' => fn ($query) => $query->activeNow()->orderByDesc('id')->with([
+                    'media',
+                    'gifts.giftProduct.primaryImage',
+                ]),
             ])
             ->firstOrFail();
 

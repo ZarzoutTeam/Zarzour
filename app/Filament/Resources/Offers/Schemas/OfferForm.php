@@ -3,9 +3,12 @@
 namespace App\Filament\Resources\Offers\Schemas;
 
 use App\Filament\Support\UsdPricing;
+use App\Models\Offer;
 use App\Models\Product;
+use App\Support\CatalogImageUpload;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -100,6 +103,41 @@ class OfferForm
                             ->helperText('يُضاف هذا المنتج مجاناً إذا كانت كميته متوفرة لحظة إنشاء الطلب.'),
                     ])
                     ->columns(2)
+                    ->columnSpanFull(),
+                Section::make('صور العرض والهدية')
+                    ->description('ارفع صوراً تسويقية اختيارية؛ عند تركها فارغة يستخدم المتجر صور المنتجات تلقائياً.')
+                    ->schema([
+                        CatalogImageUpload::configure(SpatieMediaLibraryFileUpload::make(Offer::MEDIA_OFFER_IMAGE)
+                            ->label('صورة العرض')
+                            ->collection(Offer::MEDIA_OFFER_IMAGE)
+                            ->conversion('large'))
+                            ->imageEditor()
+                            ->imageEditorAspectRatioOptions([
+                                null,
+                                '16:9',
+                                '4:5',
+                                '1:1',
+                            ])
+                            ->openable()
+                            ->downloadable()
+                            ->helperText(CatalogImageUpload::limitsDescription().' اختيارية؛ عند عدم رفعها تُستخدم الصورة الرئيسية للمنتج المشمول بالعرض.')
+                            ->columnSpanFull(),
+                        CatalogImageUpload::configure(SpatieMediaLibraryFileUpload::make(Offer::MEDIA_GIFT_IMAGE)
+                            ->label('صورة الهدية')
+                            ->collection(Offer::MEDIA_GIFT_IMAGE)
+                            ->conversion('large'))
+                            ->imageEditor()
+                            ->imageEditorAspectRatioOptions([
+                                null,
+                                '1:1',
+                                '4:5',
+                            ])
+                            ->openable()
+                            ->downloadable()
+                            ->visible(fn (Get $get): bool => in_array($get('type'), ['discount_with_gift', 'gift_only'], true))
+                            ->helperText(CatalogImageUpload::limitsDescription().' اختيارية؛ عند عدم رفعها تُستخدم الصورة الرئيسية لمنتج الهدية.')
+                            ->columnSpanFull(),
+                    ])
                     ->columnSpanFull(),
                 Section::make('مدة العرض وحالته')
                     ->description('اترك التواريخ فارغة إذا كان العرض مستمراً دون مدة محددة.')

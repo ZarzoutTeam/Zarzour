@@ -20,6 +20,13 @@ class EditOffer extends EditRecord
 
     protected static string $resource = OfferResource::class;
 
+    protected function afterSave(): void
+    {
+        /** @var Offer $offer */
+        $offer = $this->getRecord();
+        $offer->clearUnusedGiftImage();
+    }
+
     protected function getHeaderActions(): array
     {
         return [

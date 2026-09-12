@@ -7,10 +7,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Offer extends Model
+class Offer extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
+
+    public const MEDIA_OFFER_IMAGE = 'offer_image';
+
+    public const MEDIA_GIFT_IMAGE = 'gift_image';
 
     protected $fillable = [
         'product_id',
@@ -32,6 +40,40 @@ class Offer extends Model
             'ends_at' => 'datetime',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        foreach ([self::MEDIA_OFFER_IMAGE, self::MEDIA_GIFT_IMAGE] as $collection) {
+            $this->addMediaCollection($collection)
+                ->useDisk('public')
+                ->singleFile()
+                ->acceptsMimeTypes(config('catalog.media.allowed_image_mimes'));
+        }
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        foreach (['thumbnail', 'medium', 'large'] as $conversion) {
+            $mediaConversion = $this->addMediaConversion($conversion);
+
+            $mediaConversion->performOnCollections(self::MEDIA_OFFER_IMAGE, self::MEDIA_GIFT_IMAGE);
+            $mediaConversion->fit(
+                Fit::Max,
+                (int) config("catalog.media.conversions.{$conversion}.dimension"),
+                (int) config("catalog.media.conversions.{$conversion}.dimension"),
+            );
+            $mediaConversion->quality((int) config("catalog.media.conversions.{$conversion}.quality"));
+            $mediaConversion->format('webp');
+            $mediaConversion->queued();
+        }
+    }
+
+    public function clearUnusedGiftImage(): void
+    {
+        if (! $this->hasGift()) {
+            $this->clearMediaCollection(self::MEDIA_GIFT_IMAGE);
+        }
     }
 
     /**

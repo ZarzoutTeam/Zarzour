@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\HomepageSetting;
+use App\Models\Offer;
 use App\Models\Product;
 use App\Support\CatalogCache;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -41,6 +42,15 @@ class ProductMediaObserver
         }
 
         if ($media->model_type === HomepageSetting::class) {
+            CatalogCache::forgetHome();
+
+            return;
+        }
+
+        if (
+            $media->model_type === Offer::class
+            && in_array($media->collection_name, [Offer::MEDIA_OFFER_IMAGE, Offer::MEDIA_GIFT_IMAGE], true)
+        ) {
             CatalogCache::forgetHome();
 
             return;

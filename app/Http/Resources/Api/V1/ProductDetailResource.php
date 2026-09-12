@@ -4,6 +4,7 @@ namespace App\Http\Resources\Api\V1;
 
 use App\Models\Offer;
 use App\Models\Product;
+use App\Support\OfferPresentation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -79,25 +80,6 @@ class ProductDetailResource extends JsonResource
      */
     private function offerPayload(Offer $offer): array
     {
-        $giftProduct = $offer->gifts->first()?->giftProduct;
-
-        return [
-            'id' => $offer->id,
-            'type' => $offer->type,
-            'discount_type' => $offer->discount_type,
-            'discount_value' => $offer->discount_value !== null ? (float) $offer->discount_value : null,
-            'discount_value_usd' => $offer->discount_type === 'fixed' && $offer->discount_value_usd !== null
-                ? (float) $offer->discount_value_usd
-                : null,
-            'discount_values' => $offer->discount_type === 'fixed' ? [
-                'SYP' => (float) $offer->discount_value,
-                'USD' => $offer->discount_value_usd !== null ? (float) $offer->discount_value_usd : null,
-            ] : null,
-            'gift' => $giftProduct ? [
-                'product_id' => $giftProduct->id,
-                'name' => $giftProduct->name,
-                'available' => $giftProduct->is_active && $giftProduct->available_quantity > 0,
-            ] : null,
-        ];
+        return OfferPresentation::payload($offer, $this->resource);
     }
 }

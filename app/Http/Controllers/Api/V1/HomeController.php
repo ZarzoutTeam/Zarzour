@@ -93,7 +93,7 @@ class HomeController extends Controller
     {
         return Product::query()
             ->active()
-            ->with(['category', 'primaryImage'])
+            ->with($this->productCardRelations())
             ->latest()
             ->limit(self::PRODUCTS_PER_SECTION)
             ->get();
@@ -107,7 +107,7 @@ class HomeController extends Controller
         return Product::query()
             ->active()
             ->where('is_featured', true)
-            ->with(['category', 'primaryImage'])
+            ->with($this->productCardRelations())
             ->latest()
             ->limit(self::PRODUCTS_PER_SECTION)
             ->get();
@@ -124,9 +124,24 @@ class HomeController extends Controller
         return Product::query()
             ->active()
             ->whereIn('id', $discountedProductIds->merge($offeredProductIds)->unique())
-            ->with(['category', 'primaryImage'])
+            ->with($this->productCardRelations())
             ->latest()
             ->limit(self::PRODUCTS_PER_SECTION)
             ->get();
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    private function productCardRelations(): array
+    {
+        return [
+            'category',
+            'primaryImage',
+            'offers' => fn ($query) => $query->activeNow()->orderByDesc('id')->with([
+                'media',
+                'gifts.giftProduct.primaryImage',
+            ]),
+        ];
     }
 }

@@ -16,6 +16,13 @@ class CreateOffer extends CreateRecord
 {
     protected static string $resource = OfferResource::class;
 
+    protected function afterCreate(): void
+    {
+        /** @var Offer $offer */
+        $offer = $this->getRecord();
+        $offer->clearUnusedGiftImage();
+    }
+
     protected function handleRecordCreation(array $data): Model
     {
         $giftProductId = Arr::pull($data, 'gift_product_id');
