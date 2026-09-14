@@ -58,6 +58,10 @@ class OfferMediaTest extends TestCase
         $this->assertStringContainsString('offer-campaign.jpg', $list->json('data.items.0.offer.image.original_url'));
         $this->assertStringContainsString('offer-campaign.jpg', $home->json('data.offered_products.0.offer.image.original_url'));
         $this->assertStringContainsString('gift-campaign.jpg', $cart->json('data.lines.0.gift.image.original_url'));
+        $this->assertSame($giftProduct->slug, $detail->json('data.offers.0.gift.slug'));
+        $this->assertSame('/products/'.$giftProduct->slug, $detail->json('data.offers.0.gift.product_path'));
+        $this->assertSame('/products/'.$giftProduct->slug, $list->json('data.items.0.offer.gift.product_path'));
+        $this->assertSame('/products/'.$giftProduct->slug, $home->json('data.offered_products.0.offer.gift.product_path'));
 
         $this->assertSame(
             $detail->json('data.offers.0.image.original_url'),
@@ -88,6 +92,25 @@ class OfferMediaTest extends TestCase
         $this->assertStringContainsString('product-primary.jpg', $response->json('data.offers.0.image.original_url'));
         $this->assertStringContainsString('gift-product-primary.jpg', $response->json('data.offers.0.gift.image.original_url'));
         $this->assertStringContainsString('gift-product-primary.jpg', $cart->json('data.lines.0.gift.image.original_url'));
+    }
+
+    public function test_inactive_gift_product_does_not_expose_a_broken_storefront_path(): void
+    {
+        $product = Product::factory()->create();
+        $giftProduct = Product::factory()->create([
+            'is_active' => false,
+            'stock_quantity' => 5,
+            'reserved_quantity' => 0,
+        ]);
+        $offer = Offer::factory()->giftOnly()->create(['product_id' => $product->id]);
+        OfferGift::create(['offer_id' => $offer->id, 'gift_product_id' => $giftProduct->id]);
+
+        $response = $this->getJson('/api/v1/products/'.$product->slug)->assertOk();
+
+        $response
+            ->assertJsonPath('data.offers.0.gift.slug', $giftProduct->slug)
+            ->assertJsonPath('data.offers.0.gift.product_path', null)
+            ->assertJsonPath('data.offers.0.gift.available', false);
     }
 
     public function test_offer_media_is_single_file_and_invalidates_the_home_snapshot(): void

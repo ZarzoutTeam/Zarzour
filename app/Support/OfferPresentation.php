@@ -35,6 +35,8 @@ final class OfferPresentation
             'gift' => $giftProduct ? [
                 'product_id' => $giftProduct->id,
                 'name' => $giftProduct->name,
+                'slug' => $giftProduct->slug,
+                'product_path' => $giftProduct->is_active ? '/products/'.$giftProduct->slug : null,
                 'available' => $giftProduct->is_active && $giftProduct->available_quantity > 0,
                 'image' => CatalogMedia::imagePayload($giftImage),
             ] : null,
