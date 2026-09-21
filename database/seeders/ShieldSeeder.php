@@ -6,6 +6,8 @@ use BezhanSalleh\FilamentShield\Support\Utils;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class ShieldSeeder extends Seeder
@@ -28,6 +30,7 @@ class ShieldSeeder extends Seeder
         // 2. Seed roles with permissions
         static::makeRolesWithPermissions($rolesWithPermissions);
         static::grantHomepageSettingPermissions();
+        static::grantUserPermissions();
 
         // 3. Seed direct permissions
         static::makeDirectPermissions($directPermissions);
@@ -210,6 +213,32 @@ class ShieldSeeder extends Seeder
             'Create:HomepageSetting',
             'Update:HomepageSetting',
         ])->map(fn (string $name) => $permissionModel::firstOrCreate([
+            'name' => $name,
+            'guard_name' => 'web',
+        ]));
+
+        $role->givePermissionTo($permissions);
+    }
+
+    protected static function grantUserPermissions(): void
+    {
+        $role = Role::query()
+            ->where('name', 'super-admin')
+            ->where('guard_name', 'web')
+            ->first();
+
+        if (! $role) {
+            return;
+        }
+
+        $permissions = collect([
+            'ViewAny:User',
+            'View:User',
+            'Create:User',
+            'Update:User',
+            'Delete:User',
+            'DeleteAny:User',
+        ])->map(fn (string $name) => Permission::firstOrCreate([
             'name' => $name,
             'guard_name' => 'web',
         ]));

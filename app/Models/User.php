@@ -60,7 +60,9 @@ class User extends Authenticatable implements FilamentUser
 
     public function isAdmin(): bool
     {
-        return $this->hasAnyRole(['super-admin', 'manager']);
+        return $this->roles()
+            ->where('name', '!=', 'customer')
+            ->exists();
     }
 
     public function isCustomer(): bool
