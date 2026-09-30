@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Category;
@@ -66,6 +67,54 @@ class ProductEditingTest extends TestCase
             $product->fresh()->getMedia('images')->pluck('id')->all(),
         );
         $this->assertSame(1, $foreign->fresh()->order_column);
+    }
+
+    public function test_product_create_preserves_the_submitted_image_order(): void
+    {
+        $category = Category::factory()->create();
+        $component = Livewire::test(CreateProduct::class);
+        $imagesFieldKey = $component->instance()->form
+            ->getFlatFields(withHidden: true)['images']
+            ->getKey();
+
+        $component->assertFormFieldExists(
+            'images',
+            static fn ($field): bool => $field instanceof SpatieMediaLibraryFileUpload
+                && $field->shouldAppendFiles()
+                && $field->getMaxParallelUploads() === 1,
+        );
+
+        $component
+            ->fillForm([
+                'name' => 'منتج مرتب الصور',
+                'slug' => 'ordered-images-product',
+                'category_id' => $category->id,
+                'price_usd' => 10,
+                'stock_quantity' => 5,
+                'is_active' => true,
+                'is_featured' => false,
+                'images' => [
+                    'temporary-first-key' => UploadedFile::fake()->image('first.jpg', 1200, 800),
+                    'temporary-primary-key' => UploadedFile::fake()->image('primary.jpg', 1200, 800),
+                    'temporary-last-key' => UploadedFile::fake()->image('last.jpg', 1200, 800),
+                ],
+            ])
+            ->call('callSchemaComponentMethod', $imagesFieldKey, 'reorderUploadedFiles', [
+                'fileKeys' => [
+                    'temporary-primary-key',
+                    'temporary-first-key',
+                    'temporary-last-key',
+                ],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $product = Product::query()->where('slug', 'ordered-images-product')->firstOrFail();
+
+        $this->assertSame(
+            ['primary', 'first', 'last'],
+            $product->getMedia('images')->pluck('name')->all(),
+        );
     }
 
     public function test_product_edit_saves_category_and_replacement_image_in_one_submission_and_returns_to_previous_page(): void
