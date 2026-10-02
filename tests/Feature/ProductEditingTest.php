@@ -69,7 +69,7 @@ class ProductEditingTest extends TestCase
         $this->assertSame(1, $foreign->fresh()->order_column);
     }
 
-    public function test_product_create_preserves_the_submitted_image_order(): void
+    public function test_product_create_preserves_the_manually_reordered_images(): void
     {
         $category = Category::factory()->create();
         $component = Livewire::test(CreateProduct::class);
@@ -81,7 +81,7 @@ class ProductEditingTest extends TestCase
             'images',
             static fn ($field): bool => $field instanceof SpatieMediaLibraryFileUpload
                 && $field->shouldAppendFiles()
-                && $field->getMaxParallelUploads() === 1,
+                && $field->isReorderable(),
         );
 
         $component

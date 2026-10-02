@@ -138,15 +138,11 @@ class ProductForm
                             ->maxFiles((int) config('catalog.media.max_product_images'))
                             ->reorderable()
                             ->appendFiles()
-                            // Livewire receives each temporary upload as it finishes.
-                            // Serializing the uploads keeps that state in the same order
-                            // the administrator selected the images.
-                            ->maxParallelUploads(1)
                             ->panelLayout('grid')
                             ->itemPanelAspectRatio('1:1')
                             ->openable()
                             ->downloadable()
-                            ->helperText(CatalogImageUpload::limitsDescription().' اسحب المصغرات لتغيير ترتيبها، وأول صورة هي الرئيسية.')
+                            ->helperText(CatalogImageUpload::limitsDescription().' بعد اكتمال الرفع، اسحب المصغرات ورتبها بيدك؛ سيُحفظ الترتيب الظاهر، وأول صورة هي الرئيسية.')
                             ->columnSpanFull(),
                         SpatieMediaLibraryFileUpload::make('video')
                             ->label('فيديو المنتج')
